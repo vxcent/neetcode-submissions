@@ -78,8 +78,20 @@ def main():
         cards.append(card)
 
     cards.sort(key=lambda c: (c["topic"], c["id"]))
+    # Keep the file byte-stable when nothing substantive changed, so idle runs
+    # don't churn a new commit every time (the timestamp would otherwise differ).
+    prev_full = {}
+    if OUT.exists():
+        try:
+            prev_full = json.loads(OUT.read_text())
+        except Exception:
+            prev_full = {}
+    if prev_full.get("cards") == cards:
+        generated = prev_full.get("generated") or datetime.now(timezone.utc).isoformat(timespec="seconds")
+    else:
+        generated = datetime.now(timezone.utc).isoformat(timespec="seconds")
     out = {
-        "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated": generated,
         "repo": os.environ.get("GITHUB_REPOSITORY", "vxcent/neetcode-submissions"),
         "count": len(cards),
         "cards": cards,

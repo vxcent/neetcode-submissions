@@ -48,5 +48,11 @@ jobs:
             echo "catalog unchanged"
           else
             git commit -m "chore: update card catalog [skip ci]"
-            git push
+            # rebase-and-retry so concurrent runs (push + nightly) never collide
+            for i in 1 2 3 4 5; do
+              if git push; then echo "pushed"; break; fi
+              echo "push rejected, syncing (attempt $i)…"
+              git pull --rebase --autostash origin main || true
+              sleep 3
+            done
           fi
