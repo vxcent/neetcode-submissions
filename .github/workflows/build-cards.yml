@@ -1,0 +1,52 @@
+name: Build & enrich cards
+
+# The repo is the backend: every NeetCode submission push rebuilds the card
+# catalog; Claude fills in Big-O / pattern / insight; the result is committed
+# and served by GitHub Pages. paths-ignore trainer/** so the bot's own catalog
+# commit never re-triggers the workflow.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'trainer/**'
+  schedule:
+    - cron: '0 7 * * *'   # nightly safety net
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-cards
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build catalog (mechanical)
+        run: python3 scripts/build_catalog.py
+
+      - name: Enrich cards (Claude)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ENRICH_MODEL: claude-haiku-4-5-20251001
+        run: python3 scripts/enrich.py
+
+      - name: Commit catalog
+        run: |
+          git config user.name "cards-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add trainer/catalog.json
+          if git diff --cached --quiet; then
+            echo "catalog unchanged"
+          else
+            git commit -m "chore: update card catalog [skip ci]"
+            git push
+          fi

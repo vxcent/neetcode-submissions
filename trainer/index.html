@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pattern Trainer — GitHub-synced spaced repetition</title>
+<style>
+  :root{--bg:#0f1117;--card:#1a1d27;--card2:#222634;--line:#2c3040;--text:#e7e9f1;--muted:#8b90a3;--green:#58cc02;--green-d:#4aa802;--gold:#ffc800;--blue:#1cb0f6;--red:#ff4b4b;--purple:#ce82ff;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+  .wrap{max-width:960px;margin:0 auto;padding:20px 18px 90px}
+  header{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:14px 18px;background:var(--card);border-radius:16px;margin-bottom:20px;border:1px solid var(--line)}
+  .brand{font-weight:800;font-size:19px;letter-spacing:-.3px;margin-right:auto}
+  .brand small{display:block;font-weight:500;font-size:11px;color:var(--muted);letter-spacing:0}
+  .stat{display:flex;align-items:center;gap:7px;font-weight:700;font-size:16px}
+  .stat .lbl{font-weight:500;font-size:11px;color:var(--muted)}
+  .stat .col{display:flex;flex-direction:column;line-height:1.05}
+  .lvlbar{width:120px;height:8px;background:var(--card2);border-radius:6px;overflow:hidden;margin-top:3px}
+  .lvlbar>i{display:block;height:100%;background:var(--gold);width:0%}
+  nav{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+  nav button{background:var(--card);border:1px solid var(--line);color:var(--muted);padding:8px 15px;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px}
+  nav button.active{background:var(--card2);color:var(--text);border-color:#3a4055}
+  h2{font-size:15px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:24px 0 12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+  .prob{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;transition:border-color .15s}
+  .prob:hover{border-color:#3a4055}
+  .badge{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;padding:4px 8px;border-radius:6px;white-space:nowrap}
+  .b-new{background:rgba(28,176,246,.15);color:var(--blue)}.b-review{background:rgba(255,200,0,.14);color:var(--gold)}.b-weak{background:rgba(255,75,75,.14);color:var(--red)}
+  .prob .main{flex:1;min-width:0}.prob .title{font-weight:700;font-size:15px}
+  .prob .meta{font-size:12px;color:var(--muted);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .diff{font-weight:700}.d-Easy{color:var(--green)}.d-Medium{color:var(--gold)}.d-Hard{color:var(--red)}
+  .g75{background:var(--purple);color:#1a1d27;font-weight:800;font-size:9px;padding:2px 5px;border-radius:4px}
+  .dots{display:flex;gap:3px}.dots i{width:8px;height:8px;border-radius:50%;background:var(--card2);display:block}.dots i.on{background:var(--green)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .solve{background:var(--card2);border:1px solid var(--line);color:var(--text);padding:9px 14px;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px}
+  button.pass{background:var(--green);border:none;color:#08210a;padding:9px 16px;border-radius:10px;cursor:pointer;font-weight:800;font-size:13px}
+  button.pass:hover{background:var(--green-d)}
+  .empty{color:var(--muted);text-align:center;padding:40px;font-size:14px}
+  .topic{margin-bottom:14px}.topic .th{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+  .bar{height:12px;background:var(--card2);border-radius:8px;overflow:hidden}.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--green),#7ee635);width:0%;transition:width .4s}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;width:100%;max-width:460px;max-height:90vh;overflow:auto}
+  .modal h3{margin:0 0 4px;font-size:18px}.modal p.sub{margin:0 0 16px;color:var(--muted);font-size:13px}
+  label{display:block;font-size:12px;color:var(--muted);margin:12px 0 5px;font-weight:600}
+  input[type=text],select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font-size:14px;font-family:inherit}
+  textarea{resize:vertical;min-height:52px}
+  .row2{display:flex;gap:10px}.row2>div{flex:1}
+  .modalbtns{display:flex;gap:10px;margin-top:20px}.modalbtns button{flex:1;padding:12px;border-radius:11px;font-weight:800;font-size:14px;cursor:pointer;border:none}
+  .verdict{display:flex;gap:10px;margin:6px 0 4px}
+  .verdict button{flex:1;padding:11px;border-radius:11px;font-weight:800;cursor:pointer;font-size:14px;background:var(--bg);border:2px solid var(--line);color:var(--muted)}
+  .verdict button.sel-pass{border-color:var(--green);color:var(--green);background:rgba(88,204,2,.1)}
+  .verdict button.sel-fail{border-color:var(--red);color:var(--red);background:rgba(255,75,75,.1)}
+  .ghost{background:var(--card2);color:var(--text)}.go{background:var(--green);color:#08210a}
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--card2);border:1px solid var(--line);padding:13px 22px;border-radius:12px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:transform .3s;z-index:60;max-width:90vw;text-align:center}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .pill{display:inline-block;background:var(--card2);padding:3px 9px;border-radius:20px;font-size:11px;color:var(--muted);margin:0 5px 5px 0}
+  .weakrow{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}.weakrow:last-child{border:0}.weakrow .note{color:var(--muted);font-size:12px;margin-top:2px}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .tools button{background:var(--card2);border:1px solid var(--line);color:var(--muted);padding:7px 12px;border-radius:9px;cursor:pointer;font-size:12px;font-weight:600}
+  .muted{color:var(--muted);font-size:13px;line-height:1.5}
+  .hide{display:none}
+  code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+  .bcard{aspect-ratio:3/4;border-radius:16px;position:relative;cursor:pointer;perspective:1200px;background:transparent}
+  .bcard .inner{position:absolute;inset:0;transition:transform .5s;transform-style:preserve-3d}
+  .bcard.flipped .inner{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;border-radius:16px;backface-visibility:hidden;padding:14px;display:flex;flex-direction:column;overflow:hidden;border:2px solid}
+  .back{transform:rotateY(180deg);background:var(--card);border-color:var(--line)}
+  .r-Common{background:linear-gradient(160deg,#1c2b1c,#0f1117);border-color:#3f7a2e}
+  .r-Rare{background:linear-gradient(160deg,#12283a,#0f1117);border-color:#1cb0f6}
+  .r-Epic{background:linear-gradient(160deg,#2a1738,#0f1117);border-color:#ce82ff}
+  .r-Standard{background:linear-gradient(160deg,#20242f,#0f1117);border-color:#3a4055}
+  .rar{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;align-self:flex-end;padding:3px 7px;border-radius:6px;background:rgba(0,0,0,.35)}
+  .r-Common .rar{color:#7ee635}.r-Rare .rar{color:var(--blue)}.r-Epic .rar{color:var(--purple)}.r-Standard .rar{color:var(--muted)}
+  .bcard .name{font-weight:800;font-size:16px;line-height:1.15;margin-top:6px}
+  .bcard .topic{font-size:11px;color:var(--muted);margin-top:auto}
+  .bcard .patt{font-size:12px;margin-top:8px;opacity:.9}
+  .cxrow{display:flex;gap:8px;margin-top:8px}.cx{flex:1;background:rgba(0,0,0,.3);border-radius:8px;padding:6px 8px;font-size:12px}
+  .cx b{display:block;font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .strengthmini{display:flex;gap:3px;margin-top:8px}.strengthmini i{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.12)}.strengthmini i.on{background:var(--green)}
+  .back .lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-top:8px}
+  .back pre{flex:1;overflow:auto;background:#0b0d13;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:10.5px;margin:6px 0 0;white-space:pre;line-height:1.35}
+  .review{position:fixed;inset:0;background:rgba(9,10,15,.96);z-index:70;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+  .review.show{display:flex}
+  .rvtop{position:absolute;top:20px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 24px}
+  .rvbar{flex:1;height:8px;background:var(--card2);border-radius:6px;margin:0 16px;overflow:hidden}.rvbar>i{display:block;height:100%;background:var(--green);width:0%;transition:width .3s}
+  .rvclose{background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1}
+  .swipe{width:min(340px,86vw);aspect-ratio:3/4;touch-action:none;will-change:transform}
+  .rvhint{margin-top:18px;color:var(--muted);font-size:13px;text-align:center;height:18px}
+  .rvbtns{display:flex;gap:16px;margin-top:22px}.rvbtns button{width:64px;height:64px;border-radius:50%;font-size:26px;cursor:pointer;border:2px solid;background:var(--card)}
+  .rvbtns .rusty{border-color:var(--red);color:var(--red)}.rvbtns .got{border-color:var(--green);color:var(--green)}
+  .flag{position:absolute;top:20px;font-weight:900;font-size:26px;padding:6px 14px;border-radius:10px;border:3px solid;opacity:0;text-transform:uppercase}
+  .flag.got{right:18px;color:var(--green);border-color:var(--green);transform:rotate(12deg)}
+  .flag.rusty{left:18px;color:var(--red);border-color:var(--red);transform:rotate(-12deg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">🧠 Pattern Trainer <small>GitHub-synced · Claude-enriched · spaced repetition</small></div>
+    <div class="stat">🔥 <div class="col"><span id="streak">0</span><span class="lbl">day streak</span></div></div>
+    <div class="stat">⭐ <div class="col"><span id="xp">0</span><span class="lbl">XP</span></div></div>
+    <div class="stat">🃏 <div class="col"><span id="cardCount">0</span><span class="lbl">cards</span></div></div>
+    <div class="stat">🏅 <div class="col"><span>Lv <b id="lvl">1</b></span><div class="lvlbar"><i id="lvlbar"></i></div></div></div>
+  </header>
+  <nav>
+    <button data-tab="today" class="active">Today</button>
+    <button data-tab="cards">Cards 🃏</button>
+    <button data-tab="topics">Topics</button>
+    <button data-tab="weak">Weak Spots</button>
+    <button data-tab="log">Mistake Log</button>
+    <button data-tab="settings">Settings</button>
+  </nav>
+
+  <section id="tab-today">
+    <div class="card" id="dailyHead"></div>
+    <h2>Reviews due <span id="revCount" class="muted"></span></h2>
+    <div id="reviews"></div>
+    <h2>New — next in the roadmap</h2>
+    <div id="news"></div>
+  </section>
+
+  <section id="tab-cards" class="hide">
+    <div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px"><b style="font-size:16px">Your collection</b>
+        <p class="muted" id="cardsBlurb">Cards sync automatically from your repo. Swipe the due ones to review.</p></div>
+      <button class="pass" onclick="startReview()" id="reviewBtn">Swipe review</button>
+    </div>
+    <div class="grid" id="cardGrid"></div>
+  </section>
+
+  <section id="tab-topics" class="hide">
+    <div class="card muted">Roadmap order — unlock top-to-bottom. Bar = average pattern strength (box 1→5). Synced course topics appear below.</div>
+    <div id="topicList"></div>
+  </section>
+
+  <section id="tab-weak" class="hide">
+    <div class="card" id="weakSummary"></div>
+    <h2>Recent misses</h2>
+    <div id="weakList"></div>
+  </section>
+
+  <section id="tab-log" class="hide">
+    <div class="card muted">Every attempt you log lands here — your searchable memory of what tripped you and the insight that fixed it.</div>
+    <div id="logList"></div>
+  </section>
+
+  <section id="tab-settings" class="hide">
+    <div class="card">
+      <b>🔗 GitHub Sync — automatic</b>
+      <p class="muted">Cards arrive on their own: you solve on NeetCode → it commits to your repo → a GitHub Action rebuilds the catalog → Claude fills in Big-O + pattern + insight → this page picks it up. No button to press.</p>
+      <div class="tools"><button onclick="loadCatalog(false)">⟳ Reload now</button><span class="muted" id="syncInfo" style="align-self:center"></span></div>
+    </div>
+    <div class="card">
+      <label>New problems per day</label><input type="text" id="setNew" />
+      <label>Max reviews per day</label><input type="text" id="setRev" />
+      <label style="margin-top:14px">Only serve Grind 75 problems as "new"</label>
+      <select id="setG75"><option value="yes">Yes — Grind 75 only</option><option value="no">No — full roadmap</option></select>
+      <div class="modalbtns"><button class="go" onclick="saveSettings()">Save</button></div>
+    </div>
+    <div class="card">
+      <b>Backup & data</b>
+      <p class="muted">Cards come from GitHub, but your streak / XP / SRS progress lives in this browser. Export it to move devices.</p>
+      <div class="tools">
+        <button onclick="exportData()">⬇ Export progress</button>
+        <button onclick="document.getElementById('importFile').click()">⬆ Import progress</button>
+        <input type="file" id="importFile" class="hide" accept="application/json" onchange="importData(event)"/>
+        <button onclick="resetAll()" style="color:var(--red)">Reset everything</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h3 id="mTitle">Problem</h3>
+    <p class="sub" id="mSub"></p>
+    <label>Result</label>
+    <div class="verdict"><button id="vPass" onclick="setVerdict('pass')">✓ Solved</button><button id="vFail" onclick="setVerdict('fail')">✗ Missed</button></div>
+    <label>Data structure / pattern used (overrides the auto-filled one)</label>
+    <input type="text" id="mDs" placeholder="e.g. hashmap · two pointers · BFS"/>
+    <label>Your complexity — commit before you check</label>
+    <div class="row2"><div><input type="text" id="mTime" placeholder="Time e.g. O(n)"/></div><div><input type="text" id="mSpace" placeholder="Space e.g. O(1)"/></div></div>
+    <label>What tripped you? (tag)</label>
+    <select id="mTag"><option value="">— none / clean solve —</option><option>Didn't spot the pattern</option><option>Off-by-one / bounds</option><option>Wrong data structure</option><option>Edge case missed</option><option>Complexity wrong / too slow</option><option>Recursion / base case</option><option>Pointer / index bug</option><option>Got it but too slow to write</option></select>
+    <label>One line: the key insight</label>
+    <textarea id="mNote" placeholder="e.g. hashmap of value→index makes lookup O(1)"></textarea>
+    <div class="modalbtns"><button class="ghost" onclick="closeModal()">Cancel</button><button class="go" onclick="submitLog()">Save & schedule</button></div>
+  </div>
+</div>
+
+<div class="review" id="review">
+  <div class="rvtop"><span class="muted" id="rvCount"></span><div class="rvbar"><i id="rvBar"></i></div><button class="rvclose" onclick="endReview()">✕</button></div>
+  <div class="swipe" id="swipe"></div>
+  <div class="rvhint" id="rvHint">Tap to flip · swipe → got it · ← rusty</div>
+  <div class="rvbtns"><button class="rusty" onclick="rate(false)">😵</button><button class="got" onclick="rate(true)">✅</button></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- SEED (roadmap for the "new" queue) ---------- */
+const TOPICS=["Arrays & Hashing","Two Pointers","Sliding Window","Stack","Binary Search","Linked List","Trees","Tries","Heap / Priority Queue","Backtracking","Graphs","1-D Dynamic Programming","2-D Dynamic Programming","Greedy","Intervals","Bit Manipulation"];
+const SEED={
+"Arrays & Hashing":[["Two Sum","two-sum","Easy",1],["Valid Anagram","valid-anagram","Easy",1],["Contains Duplicate","contains-duplicate","Easy",1],["Group Anagrams","group-anagrams","Medium",0],["Top K Frequent Elements","top-k-frequent-elements","Medium",0],["Product of Array Except Self","product-of-array-except-self","Medium",1],["Valid Sudoku","valid-sudoku","Medium",0],["Longest Consecutive Sequence","longest-consecutive-sequence","Medium",0]],
+"Two Pointers":[["Valid Palindrome","valid-palindrome","Easy",1],["Two Sum II","two-sum-ii-input-array-is-sorted","Medium",0],["3Sum","3sum","Medium",1],["Container With Most Water","container-with-most-water","Medium",1],["Trapping Rain Water","trapping-rain-water","Hard",1]],
+"Sliding Window":[["Best Time to Buy and Sell Stock","best-time-to-buy-and-sell-stock","Easy",1],["Longest Substring Without Repeating Characters","longest-substring-without-repeating-characters","Medium",1],["Longest Repeating Character Replacement","longest-repeating-character-replacement","Medium",0],["Find All Anagrams in a String","find-all-anagrams-in-a-string","Medium",1],["Minimum Window Substring","minimum-window-substring","Hard",1]],
+"Stack":[["Valid Parentheses","valid-parentheses","Easy",1],["Min Stack","min-stack","Medium",1],["Evaluate Reverse Polish Notation","evaluate-reverse-polish-notation","Medium",1],["Daily Temperatures","daily-temperatures","Medium",0],["Largest Rectangle in Histogram","largest-rectangle-in-histogram","Hard",1]],
+"Binary Search":[["Binary Search","binary-search","Easy",1],["Search a 2D Matrix","search-a-2d-matrix","Medium",0],["Koko Eating Bananas","koko-eating-bananas","Medium",0],["Search in Rotated Sorted Array","search-in-rotated-sorted-array","Medium",1],["Find Minimum in Rotated Sorted Array","find-minimum-in-rotated-sorted-array","Medium",0],["Time Based Key-Value Store","time-based-key-value-store","Medium",1]],
+"Linked List":[["Reverse Linked List","reverse-linked-list","Easy",1],["Merge Two Sorted Lists","merge-two-sorted-lists","Easy",1],["Linked List Cycle","linked-list-cycle","Easy",1],["Middle of the Linked List","middle-of-the-linked-list","Easy",1],["Reorder List","reorder-list","Medium",0],["Remove Nth Node From End of List","remove-nth-node-from-end-of-list","Medium",0],["Add Two Numbers","add-two-numbers","Medium",0],["LRU Cache","lru-cache","Medium",1],["Merge k Sorted Lists","merge-k-sorted-lists","Hard",1]],
+"Trees":[["Invert Binary Tree","invert-binary-tree","Easy",1],["Maximum Depth of Binary Tree","maximum-depth-of-binary-tree","Easy",1],["Diameter of Binary Tree","diameter-of-binary-tree","Easy",1],["Balanced Binary Tree","balanced-binary-tree","Easy",1],["Same Tree","same-tree","Easy",0],["Lowest Common Ancestor of a BST","lowest-common-ancestor-of-a-binary-search-tree","Medium",1],["Binary Tree Level Order Traversal","binary-tree-level-order-traversal","Medium",1],["Binary Tree Right Side View","binary-tree-right-side-view","Medium",1],["Validate Binary Search Tree","validate-binary-search-tree","Medium",1],["Kth Smallest Element in a BST","kth-smallest-element-in-a-bst","Medium",1],["Construct Binary Tree from Preorder and Inorder","construct-binary-tree-from-preorder-and-inorder-traversal","Medium",1],["Binary Tree Maximum Path Sum","binary-tree-maximum-path-sum","Hard",0],["Serialize and Deserialize Binary Tree","serialize-and-deserialize-binary-tree","Hard",1]],
+"Tries":[["Implement Trie (Prefix Tree)","implement-trie-prefix-tree","Medium",1],["Design Add and Search Words","design-add-and-search-words-data-structure","Medium",0],["Word Search II","word-search-ii","Hard",0]],
+"Heap / Priority Queue":[["Kth Largest Element in a Stream","kth-largest-element-in-a-stream","Easy",0],["Last Stone Weight","last-stone-weight","Easy",0],["K Closest Points to Origin","k-closest-points-to-origin","Medium",1],["Kth Largest Element in an Array","kth-largest-element-in-an-array","Medium",0],["Task Scheduler","task-scheduler","Medium",1],["Find Median from Data Stream","find-median-from-data-stream","Hard",1]],
+"Backtracking":[["Subsets","subsets","Medium",1],["Combination Sum","combination-sum","Medium",1],["Permutations","permutations","Medium",1],["Word Search","word-search","Medium",1],["Palindrome Partitioning","palindrome-partitioning","Medium",0],["Letter Combinations of a Phone Number","letter-combinations-of-a-phone-number","Medium",1]],
+"Graphs":[["Number of Islands","number-of-islands","Medium",1],["Clone Graph","clone-graph","Medium",1],["Flood Fill","flood-fill","Easy",1],["Rotting Oranges","rotting-oranges","Medium",1],["Pacific Atlantic Water Flow","pacific-atlantic-water-flow","Medium",0],["Course Schedule","course-schedule","Medium",1],["Course Schedule II","course-schedule-ii","Medium",0],["Word Ladder","word-ladder","Hard",1]],
+"1-D Dynamic Programming":[["Climbing Stairs","climbing-stairs","Easy",1],["House Robber","house-robber","Medium",0],["Longest Palindromic Substring","longest-palindromic-substring","Medium",1],["Coin Change","coin-change","Medium",1],["Word Break","word-break","Medium",1],["Longest Increasing Subsequence","longest-increasing-subsequence","Medium",0],["Partition Equal Subset Sum","partition-equal-subset-sum","Medium",1]],
+"2-D Dynamic Programming":[["Unique Paths","unique-paths","Medium",1],["Longest Common Subsequence","longest-common-subsequence","Medium",0],["01 Matrix","01-matrix","Medium",1]],
+"Greedy":[["Maximum Subarray","maximum-subarray","Medium",1],["Jump Game","jump-game","Medium",0],["Maximum Profit in Job Scheduling","maximum-profit-in-job-scheduling","Hard",1]],
+"Intervals":[["Insert Interval","insert-interval","Medium",1],["Merge Intervals","merge-intervals","Medium",1],["Non-overlapping Intervals","non-overlapping-intervals","Medium",0]],
+"Bit Manipulation":[["Single Number","single-number","Easy",0],["Number of 1 Bits","number-of-1-bits","Easy",0],["Counting Bits","counting-bits","Easy",0],["Missing Number","missing-number","Easy",0],["Add Binary","add-binary","Easy",1]],
+};
+const PROBLEMS=[];TOPICS.forEach(t=>(SEED[t]||[]).forEach(p=>PROBLEMS.push({id:p[1],title:p[0],slug:p[1],topic:t,diff:p[2],g75:!!p[3],seed:true})));
+const P_BY_ID=Object.fromEntries(PROBLEMS.map(p=>[p.id,p]));
+
+/* ---------- catalog (synced from GitHub) ---------- */
+let SYNCED={}; // id -> {title,topic,ext,subs,code,enriched}
+
+/* ---------- state ---------- */
+const KEY="patternTrainerGH";
+const INTERVALS=[1,3,7,21,60];
+function defState(){return{xp:0,streak:0,lastActive:null,lastSession:null,catalogAt:null,settings:{newPerDay:2,revCap:8,g75only:true},prog:{},log:[]};}
+let S=load();
+function load(){try{const r=localStorage.getItem(KEY);return r?Object.assign(defState(),JSON.parse(r)):defState();}catch(e){return defState();}}
+function save(){localStorage.setItem(KEY,JSON.stringify(S));}
+
+function todayISO(){return new Date().toISOString().slice(0,10);}
+function addDaysISO(iso,n){const d=new Date(iso+"T00:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function dayDiff(a,b){return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/86400000);}
+function touchStreak(){const t=todayISO();if(S.lastActive===t)return;if(S.lastActive&&dayDiff(S.lastActive,t)===1)S.streak+=1;else S.streak=1;S.lastActive=t;}
+
+function prettify(slug){return slug.replace(/^python-/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());}
+function getProblem(id){if(P_BY_ID[id])return P_BY_ID[id];const s=SYNCED[id];if(s)return{id,title:s.title,slug:id,topic:s.topic,diff:s.diff||"—",g75:false,synced:true};const pr=S.prog[id]||{};return{id,title:pr.title||prettify(id),slug:id,topic:pr.topic||"Synced",diff:"—",synced:true};}
+function allProblemsWithProg(){const ids=new Set([...PROBLEMS.map(p=>p.id),...Object.keys(S.prog)]);return[...ids].map(getProblem);}
+function rarity(diff){return diff==="Easy"?"Common":diff==="Medium"?"Rare":diff==="Hard"?"Epic":"Standard";}
+/* merged card metadata: user override (prog.card) wins over Claude enrichment (SYNCED.enriched) */
+function cardData(id){const pr=S.prog[id]||{},c=pr.card||{},e=(SYNCED[id]||{}).enriched||{};return{ds:c.ds||e.ds||"",time:c.time||e.time||"",space:c.space||e.space||"",insight:c.insight||e.insight||"",code:(SYNCED[id]||{}).code||"",ext:(SYNCED[id]||{}).ext||"",auto:!c.ds&&!!e.ds};}
+
+/* ---------- catalog fetch ---------- */
+async function loadCatalog(silent){
+  try{
+    const r=await fetch('catalog.json?_='+Date.now(),{cache:'no-store'});
+    if(!r.ok){if(!silent)toast('No catalog.json yet');return;}
+    const cat=await r.json();
+    if(silent&&cat.generated===S.catalogAt)return; // unchanged
+    let minted=0;const t=todayISO();
+    (cat.cards||[]).forEach(c=>{
+      SYNCED[c.id]={title:c.title,topic:c.topic,ext:c.ext,subs:c.subs,code:c.code,enriched:c.enriched,diff:c.difficulty||"—"};
+      if(!S.prog[c.id]&&!P_BY_ID[c.id]){S.prog[c.id]={box:1,due:addDaysISO(t,1),attempts:1,lastResult:'pass',synced:true,firstSeen:t};minted++;}
+      else if(S.prog[c.id])S.prog[c.id].synced=true;
+    });
+    S.catalogAt=cat.generated;save();updateSyncInfo(cat.generated);render();
+    if(minted)toast(`${minted} new card${minted>1?'s':''} synced 🃏`);
+    else if(!silent)toast('Catalog up to date');
+  }catch(e){if(!silent)toast('Catalog fetch failed');}
+}
+function updateSyncInfo(iso){const el=$("#syncInfo");if(!el)return;el.textContent=iso?`catalog updated ${iso.replace('T',' ').replace(/(\+|Z).*$/,'')} UTC`:'never synced';}
+
+/* ---------- session ---------- */
+function reviewsDue(){const t=todayISO();return PROBLEMS.filter(p=>{const pr=S.prog[p.id];return pr&&pr.due&&pr.due<=t;}).sort((a,b)=>S.prog[a.id].due.localeCompare(S.prog[b.id].due)).slice(0,S.settings.revCap);}
+function nextNew(){return PROBLEMS.filter(p=>!S.prog[p.id]).filter(p=>S.settings.g75only?p.g75:true).slice(0,S.settings.newPerDay);}
+
+/* ---------- render ---------- */
+const $=s=>document.querySelector(s);
+function render(){
+  $("#streak").textContent=S.streak;$("#xp").textContent=S.xp;
+  const lvl=Math.floor(S.xp/100)+1;$("#lvl").textContent=lvl;$("#lvlbar").style.width=(S.xp%100)+"%";
+  $("#cardCount").textContent=Object.keys(S.prog).length;
+  const revs=reviewsDue(),news=nextNew(),total=revs.length+news.length;
+  $("#dailyHead").innerHTML=total===0?`<b style="font-size:17px">All clear for today 🎉</b><p class="muted">No reviews due and no new problems queued. Solve on NeetCode and the cards roll in.</p>`:`<b style="font-size:17px">Today's session — ${total} problem${total>1?'s':''}</b><p class="muted">${revs.length} review${revs.length!==1?'s':''} + ${news.length} new. Passing a cold review is worth the most XP.</p>`;
+  $("#revCount").textContent=revs.length?`(${revs.length})`:"";
+  $("#reviews").innerHTML=revs.length?revs.map(p=>probRow(p,"review")).join(""):`<div class="empty">No reviews due — your memory's holding.</div>`;
+  $("#news").innerHTML=news.length?news.map(p=>probRow(p,"new")).join(""):`<div class="empty">No new problems queued for your filter.</div>`;
+  renderCards();renderTopics();renderWeak();renderLog();
+  $("#setNew").value=S.settings.newPerDay;$("#setRev").value=S.settings.revCap;$("#setG75").value=S.settings.g75only?"yes":"no";
+}
+function dots(box){let h='<span class="dots">';for(let i=1;i<=5;i++)h+=`<i class="${i<=box?'on':''}"></i>`;return h+'</span>';}
+function probRow(p,kind){const pr=S.prog[p.id];const failing=pr&&pr.lastResult==='fail';const badge=failing?`<span class="badge b-weak">Retry</span>`:kind==='new'?`<span class="badge b-new">New</span>`:`<span class="badge b-review">Review</span>`;const due=pr&&pr.due?`due ${pr.due===todayISO()?'today':pr.due}`:'';
+  return `<div class="prob">${badge}<div class="main"><div class="title">${esc(p.title)}</div><div class="meta"><span class="diff d-${p.diff}">${p.diff}</span>${p.g75?'<span class="g75">GRIND 75</span>':''}<span>${esc(p.topic)}</span>${pr?dots(pr.box):''}${due?`<span>· ${due}</span>`:''}</div></div><div class="actions"><a class="solve" href="https://leetcode.com/problems/${p.slug}/" target="_blank" rel="noopener">Solve ↗</a><button class="pass" onclick="openModal('${p.id}')">Log</button></div></div>`;}
+
+function renderCards(){
+  const items=allProblemsWithProg().filter(p=>S.prog[p.id]);
+  const due=items.filter(p=>{const pr=S.prog[p.id];return pr.due&&pr.due<=todayISO();}).length;
+  $("#reviewBtn").textContent=due?`Swipe review (${due} due)`:"Swipe review";
+  $("#cardsBlurb").textContent=items.length?`${items.length} card${items.length>1?'s':''} collected · ${due} due for review.`:"Solve a problem on NeetCode — the card syncs here automatically.";
+  $("#cardGrid").innerHTML=items.length?items.map(cardHTML).join(""):`<div class="empty" style="grid-column:1/-1">No cards yet. Solve on NeetCode, or hit Settings → Reload now.</div>`;
+}
+function cardHTML(p){const pr=S.prog[p.id],d=cardData(p.id),rar=rarity(p.diff);
+  const strong='<span class="strengthmini">'+[1,2,3,4,5].map(i=>`<i class="${i<=pr.box?'on':''}"></i>`).join('')+'</span>';
+  return `<div class="bcard" id="bc-${cssId(p.id)}" onclick="flipCard('${p.id}')"><div class="inner">
+    <div class="face r-${rar}"><span class="rar">${rar}${pr.synced?' · synced':''}</span>
+      <div class="name">${esc(p.title)}</div>
+      <div class="patt">${d.ds?(d.auto?'🤖 ':'🧩 ')+esc(d.ds):'<span class="muted">awaiting pattern…</span>'}</div>
+      <div class="cxrow"><div class="cx"><b>Time</b>${esc(d.time||'—')}</div><div class="cx"><b>Space</b>${esc(d.space||'—')}</div></div>
+      <div class="topic">${esc(p.topic)} · <span class="diff d-${p.diff}">${p.diff}</span></div>${strong}</div>
+    <div class="face back"><div class="lbl">Key insight</div><div style="font-size:12.5px">${d.insight?esc(d.insight):'<span class="muted">—</span>'}</div>
+      <div class="lbl">Your code ${d.ext?'· '+d.ext:''}</div><pre>${d.code?esc(d.code):'no code synced'}</pre></div>
+  </div></div>`;}
+function cssId(id){return id.replace(/[^a-z0-9]/gi,'_');}
+function flipCard(id){document.getElementById('bc-'+cssId(id)).classList.toggle('flipped');}
+
+function renderTopics(){
+  const rows=[...TOPICS];
+  new Set(Object.keys(S.prog).filter(id=>!P_BY_ID[id]).map(id=>getProblem(id).topic)).forEach(t=>{if(!rows.includes(t))rows.push(t);});
+  $("#topicList").innerHTML=rows.map(t=>{const ps=allProblemsWithProg().filter(p=>p.topic===t);if(!ps.length)return'';
+    const strength=ps.reduce((s,p)=>s+((S.prog[p.id]?.box)||0),0);const pct=Math.round(strength/(5*ps.length)*100);const done=ps.filter(p=>(S.prog[p.id]?.box||0)>=4).length;
+    return `<div class="topic"><div class="th"><b>${esc(t)}</b><span>${done}/${ps.length} strong · ${pct}%</span></div><div class="bar"><i style="width:${pct}%"></i></div></div>`;}).join("");
+}
+function renderWeak(){
+  const fails=S.log.filter(l=>l.result==='fail');const byTopic={},byTag={};
+  fails.forEach(f=>{byTopic[f.topic]=(byTopic[f.topic]||0)+1;if(f.tag)byTag[f.tag]=(byTag[f.tag]||0)+1;});
+  const top=Object.entries(byTopic).sort((a,b)=>b[1]-a[1])[0];
+  const tags=Object.entries(byTag).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span class="pill">${k} · ${v}</span>`).join("");
+  $("#weakSummary").innerHTML=fails.length===0?`<b>No misses logged yet.</b><p class="muted">Logged misses cluster here so you see the pattern behind your mistakes.</p>`:`<b style="font-size:16px">Rustiest area: ${top?esc(top[0]):'—'}</b><p class="muted">${fails.length} miss${fails.length>1?'es':''} logged. Common failure modes:</p>${tags||'<span class="muted">no tags</span>'}`;
+  const weak=allProblemsWithProg().filter(p=>S.prog[p.id]?.lastResult==='fail');
+  $("#weakList").innerHTML=weak.length?weak.map(p=>{const last=[...S.log].reverse().find(l=>l.id===p.id);return `<div class="prob"><span class="badge b-weak">Retry</span><div class="main"><div class="title">${esc(p.title)}</div><div class="meta"><span>${esc(p.topic)}</span>${last?.note?`<span>· ${esc(last.note)}</span>`:''}</div></div><div class="actions"><a class="solve" href="https://leetcode.com/problems/${p.slug}/" target="_blank">Solve ↗</a><button class="pass" onclick="openModal('${p.id}')">Log</button></div></div>`;}).join(""):`<div class="empty">Nothing marked for retry.</div>`;
+}
+function renderLog(){if(!S.log.length){$("#logList").innerHTML=`<div class="empty">No entries yet.</div>`;return;}
+  $("#logList").innerHTML=[...S.log].reverse().map(l=>`<div class="weakrow"><div><b style="color:${l.result==='pass'?'var(--green)':'var(--red)'}">${l.result==='pass'?'✓':'✗'}</b> <b>${esc(l.title)}</b><div class="note">${l.tag?`<span class="pill">${l.tag}</span>`:''}${l.note?esc(l.note):'<i>no note</i>'}${(l.time||l.space)?`<span class="pill">T ${esc(l.time||'?')} · S ${esc(l.space||'?')}</span>`:''}</div></div><span class="muted" style="white-space:nowrap">${l.ts.slice(0,10)}</span></div>`).join("");}
+function esc(s){return (s==null?'':''+s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));}
+
+/* ---------- log modal ---------- */
+let curId=null,curVerdict=null;
+function openModal(id){curId=id;curVerdict=null;const p=getProblem(id),d=cardData(id);
+  $("#mTitle").textContent=p.title;$("#mSub").textContent=`${p.diff} · ${p.topic}`;
+  $("#vPass").className="";$("#vFail").className="";
+  $("#mDs").value=(S.prog[id]?.card?.ds)||d.ds||"";$("#mTime").value=(S.prog[id]?.card?.time)||d.time||"";$("#mSpace").value=(S.prog[id]?.card?.space)||d.space||"";$("#mTag").value="";$("#mNote").value=(S.prog[id]?.card?.insight)||d.insight||"";
+  $("#modal").classList.add("show");}
+function closeModal(){$("#modal").classList.remove("show");curId=null;}
+function setVerdict(v){curVerdict=v;$("#vPass").className=v==='pass'?'sel-pass':'';$("#vFail").className=v==='fail'?'sel-fail':'';}
+function submitLog(){if(!curVerdict){toast("Pick Solved or Missed first");return;}
+  const p=getProblem(curId),t=todayISO();let pr=S.prog[curId]||{box:0,due:t,attempts:0,lastResult:null,firstSeen:t};
+  if(!P_BY_ID[curId]){pr.title=p.title;pr.topic=p.topic;}
+  pr.attempts++;if(curVerdict==='pass')pr.box=Math.min((pr.box||0)+1,5);else pr.box=1;
+  pr.lastResult=curVerdict;pr.due=addDaysISO(t,INTERVALS[pr.box-1]);
+  pr.card=Object.assign(pr.card||{},{ds:$("#mDs").value.trim(),time:$("#mTime").value.trim(),space:$("#mSpace").value.trim(),insight:$("#mNote").value.trim()});
+  S.prog[curId]=pr;
+  const wasReview=pr.attempts>1;let gain=curVerdict==='pass'?(wasReview?15:10):3;if(S.streak>=3&&curVerdict==='pass')gain+=2;S.xp+=gain;
+  S.log.push({ts:new Date().toISOString(),id:curId,title:p.title,topic:p.topic,result:curVerdict,tag:$("#mTag").value,note:$("#mNote").value.trim(),time:$("#mTime").value.trim(),space:$("#mSpace").value.trim()});
+  touchStreak();S.lastSession=t;save();closeModal();
+  toast(curVerdict==='pass'?`✓ +${gain} XP · next review in ${INTERVALS[pr.box-1]}d`:`Logged — back tomorrow to retry`);render();}
+
+/* ---------- swipe review ---------- */
+let rvQueue=[],rvIdx=0,drag=null;
+function startReview(){const t=todayISO();let q=allProblemsWithProg().filter(p=>{const pr=S.prog[p.id];return pr&&pr.due&&pr.due<=t;});if(!q.length)q=allProblemsWithProg().filter(p=>S.prog[p.id]);if(!q.length){toast("No cards yet — solve one first");return;}rvQueue=q.map(p=>p.id);rvIdx=0;$("#review").classList.add("show");showCard();}
+function endReview(){$("#review").classList.remove("show");render();}
+function showCard(){
+  if(rvIdx>=rvQueue.length){$("#swipe").innerHTML=`<div class="face r-Standard" style="align-items:center;justify-content:center;text-align:center;position:static;height:100%"><div><div style="font-size:40px">🎉</div><b>Review complete</b><p class="muted">${rvQueue.length} card${rvQueue.length>1?'s':''} reviewed</p></div></div>`;$("#rvHint").textContent="";$("#rvBar").style.width="100%";$("#rvCount").textContent=`${rvQueue.length}/${rvQueue.length}`;setTimeout(endReview,1400);return;}
+  const id=rvQueue[rvIdx],p=getProblem(id),pr=S.prog[id];
+  $("#rvCount").textContent=`${rvIdx+1}/${rvQueue.length}`;$("#rvBar").style.width=(rvIdx/rvQueue.length*100)+"%";$("#rvHint").textContent="Tap to flip · swipe → got it · ← rusty";
+  $("#swipe").innerHTML=`<div class="bcard" id="rvcard" style="width:100%;height:100%"><div class="flag got">Got it</div><div class="flag rusty">Rusty</div>${cardInner(p,pr)}</div>`;attachDrag();
+}
+function cardInner(p,pr){const d=cardData(p.id),rar=rarity(p.diff);
+  return `<div class="inner"><div class="face r-${rar}"><span class="rar">${rar}</span><div class="name">${esc(p.title)}</div><div class="patt">${d.ds?'🧩 recall…':'<span class="muted">recall the pattern…</span>'}</div><div class="topic">${esc(p.topic)} · <span class="diff d-${p.diff}">${p.diff}</span></div></div><div class="face back"><div class="lbl">Pattern</div><div>${esc(d.ds||'—')}</div><div class="lbl">Complexity</div><div>Time ${esc(d.time||'—')} · Space ${esc(d.space||'—')}</div><div class="lbl">Key insight</div><div style="font-size:12.5px">${esc(d.insight||'—')}</div><div class="lbl">Your code</div><pre>${d.code?esc(d.code):'—'}</pre></div></div>`;}
+function attachDrag(){const card=document.getElementById('rvcard');if(!card)return;
+  card.onclick=()=>{if(drag&&drag.moved)return;card.classList.toggle('flipped');};
+  card.onpointerdown=(e)=>{drag={x0:e.clientX,dx:0,moved:false};card.setPointerCapture(e.pointerId);card.style.transition='none';};
+  card.onpointermove=(e)=>{if(!drag)return;drag.dx=e.clientX-drag.x0;if(Math.abs(drag.dx)>6)drag.moved=true;card.style.transform=`translateX(${drag.dx}px) rotate(${drag.dx/20}deg)`;card.querySelector('.flag.got').style.opacity=Math.max(0,drag.dx/120);card.querySelector('.flag.rusty').style.opacity=Math.max(0,-drag.dx/120);};
+  card.onpointerup=()=>{if(!drag)return;const dx=drag.dx;card.style.transition='transform .3s';if(dx>120){card.style.transform=`translateX(400px) rotate(20deg)`;setTimeout(()=>rate(true),180);}else if(dx<-120){card.style.transform=`translateX(-400px) rotate(-20deg)`;setTimeout(()=>rate(false),180);}else{card.style.transform='';card.querySelector('.flag.got').style.opacity=0;card.querySelector('.flag.rusty').style.opacity=0;}setTimeout(()=>{drag=null;},50);};
+}
+function rate(got){const id=rvQueue[rvIdx],pr=S.prog[id],t=todayISO();if(got){pr.box=Math.min((pr.box||1)+1,5);S.xp+=5;}else{pr.box=1;S.xp+=1;}pr.due=addDaysISO(t,INTERVALS[pr.box-1]);touchStreak();S.lastSession=t;save();rvIdx++;showCard();$("#xp").textContent=S.xp;$("#streak").textContent=S.streak;}
+
+/* ---------- settings / data ---------- */
+function saveSettings(){S.settings.newPerDay=Math.max(0,parseInt($("#setNew").value)||0);S.settings.revCap=Math.max(1,parseInt($("#setRev").value)||8);S.settings.g75only=$("#setG75").value==='yes';save();toast("Settings saved");render();}
+function exportData(){const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pattern-trainer-progress.json';a.click();}
+function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{S=Object.assign(defState(),JSON.parse(r.result));save();toast("Imported");render();loadCatalog(true);}catch(err){toast("Bad file");}};r.readAsText(f);}
+function resetAll(){if(confirm("Erase all progress, XP, streak and logs? (cards will re-sync from GitHub)")){S=defState();save();render();loadCatalog(false);toast("Reset");}}
+
+/* ---------- tabs / toast ---------- */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');['today','cards','topics','weak','log','settings'].forEach(t=>$('#tab-'+t).classList.add('hide'));$('#tab-'+b.dataset.tab).classList.remove('hide');});
+let toastT;function toast(m){const el=$("#toast");el.textContent=m;el.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("show"),2800);}
+
+render();
+loadCatalog(false);
+setInterval(()=>loadCatalog(true),20000);           // pinned-tab live refresh
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadCatalog(true);});
+</script>
+</body>
+</html>
