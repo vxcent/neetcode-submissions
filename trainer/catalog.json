@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-02T23:53:46+00:00",
+  "generated": "2026-07-02T23:57:44+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 4,
+  "count": 5,
   "cards": [
     {
       "id": "python-sort-custom",
@@ -61,6 +61,21 @@
         "time": "O(n log n)",
         "space": "O(n)",
         "insight": "Use sorted with key and reverse to return a new sorted list while leaving the original unchanged."
+      }
+    },
+    {
+      "id": "python-unpacking",
+      "title": "Unpacking",
+      "topic": "Python Coding Interviews",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Python Coding Interviews/python-unpacking/submission-0.py",
+      "code": "from typing import List, Tuple\n\n\ndef sum_3_integers(triplet: List[int]) -> int:\n    a, b, c = triplet\n    return a + b + c\n\n\ndef compute_volume(box_dimensions: Tuple[int, int, int]) -> int:\n    x, y, z = box_dimensions\n    return x * y * z\n  \n\n# do not modify below this line\nprint(sum_3_integers([1, 2, 3]))\nprint(sum_3_integers([4, 6, 2]))\n\nprint(compute_volume((1, 2, 3)))\nprint(compute_volume((3, 2, 1)))\nprint(compute_volume((3, 9, 7)))\n",
+      "enriched": {
+        "ds": "tuple unpacking",
+        "time": "O(1)",
+        "space": "O(1)",
+        "insight": "Python unpacking binds sequence elements to named variables in one readable statement."
       }
     }
   ]
