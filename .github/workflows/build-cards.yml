@@ -33,10 +33,10 @@ jobs:
       - name: Build catalog (mechanical)
         run: python3 scripts/build_catalog.py
 
-      - name: Enrich cards (Claude)
+      - name: Enrich cards (Together AI · Kimi)
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          ENRICH_MODEL: claude-haiku-4-5-20251001
+          TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+          ENRICH_MODEL: moonshotai/Kimi-K2.7-Code
         run: python3 scripts/enrich.py
 
       - name: Commit catalog

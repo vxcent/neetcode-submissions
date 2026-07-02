@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 """Fill in each card's Big-O, pattern, and key insight by reading its code.
 
-Runs after build_catalog.py in CI. Uses the Anthropic Messages API over
-stdlib urllib (no pip installs). No-ops cleanly if ANTHROPIC_API_KEY is
-absent, so tier-1 (mechanical) works without a key.
+Runs after build_catalog.py in CI. Uses Together AI's OpenAI-compatible
+Chat Completions API over stdlib urllib (no pip installs). No-ops cleanly if
+TOGETHER_API_KEY is absent, so tier-1 (mechanical) works without a key.
 
 Env:
-    ANTHROPIC_API_KEY   required to do anything
-    ENRICH_MODEL        default claude-haiku-4-5-20251001
-    ENRICH_MAX          max cards to enrich per run (default 40)
+    TOGETHER_API_KEY   required to do anything
+    ENRICH_MODEL       default moonshotai/Kimi-K2.7-Code
+    ENRICH_BASE_URL    default https://api.together.xyz/v1/chat/completions
+    ENRICH_MAX         max cards to enrich per run (default 40)
 """
 import json, os, re, sys, urllib.request, urllib.error
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CAT = ROOT / "trainer" / "catalog.json"
-MODEL = os.environ.get("ENRICH_MODEL", "claude-haiku-4-5-20251001")
+MODEL = os.environ.get("ENRICH_MODEL", "moonshotai/Kimi-K2.7-Code")
+BASE_URL = os.environ.get("ENRICH_BASE_URL", "https://api.together.xyz/v1/chat/completions")
 MAX = int(os.environ.get("ENRICH_MAX", "40"))
-KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+KEY = os.environ.get("TOGETHER_API_KEY", "").strip()
 
 SYSTEM = (
     "You are a terse coding-interview coach. Given a problem title and a code "
@@ -29,26 +31,25 @@ SYSTEM = (
 )
 
 
-def call(title: str, code: str) -> dict | None:
+def call(title: str, code: str):
     body = json.dumps({
         "model": MODEL,
-        "max_tokens": 400,
-        "system": SYSTEM,
-        "messages": [{
-            "role": "user",
-            "content": f"Title: {title}\n\nCode:\n```\n{code[:6000]}\n```",
-        }],
+        "max_tokens": 500,
+        "temperature": 0.2,
+        "messages": [
+            {"role": "system", "content": SYSTEM},
+            {"role": "user", "content": f"Title: {title}\n\nCode:\n```\n{code[:6000]}\n```"},
+        ],
     }).encode()
     req = urllib.request.Request(
-        "https://api.anthropic.com/v1/messages", data=body,
+        BASE_URL, data=body,
         headers={
-            "x-api-key": KEY,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
+            "Authorization": f"Bearer {KEY}",
+            "Content-Type": "application/json",
         },
     )
     try:
-        with urllib.request.urlopen(req, timeout=60) as r:
+        with urllib.request.urlopen(req, timeout=90) as r:
             data = json.loads(r.read())
     except urllib.error.HTTPError as e:
         print(f"  ! API {e.code}: {e.read()[:200]!r}", file=sys.stderr)
@@ -56,7 +57,10 @@ def call(title: str, code: str) -> dict | None:
     except Exception as e:
         print(f"  ! {e}", file=sys.stderr)
         return None
-    text = "".join(b.get("text", "") for b in data.get("content", []))
+    try:
+        text = data["choices"][0]["message"]["content"] or ""
+    except (KeyError, IndexError, TypeError):
+        return None
     m = re.search(r"\{.*\}", text, re.S)
     if not m:
         return None
@@ -64,12 +68,13 @@ def call(title: str, code: str) -> dict | None:
         obj = json.loads(m.group(0))
     except Exception:
         return None
-    return {k: str(obj.get(k, "")).strip() for k in ("ds", "time", "space", "insight")}
+    out = {k: str(obj.get(k, "")).strip() for k in ("ds", "time", "space", "insight")}
+    return out if out["ds"] or out["time"] else None
 
 
 def main():
     if not KEY:
-        print("enrich: ANTHROPIC_API_KEY not set — skipping (tier-1 only).")
+        print("enrich: TOGETHER_API_KEY not set — skipping (tier-1 only).")
         return 0
     if not CAT.exists():
         print("enrich: no catalog.json — run build_catalog.py first.")
@@ -86,6 +91,7 @@ def main():
         if res:
             c["enriched"] = res
             done += 1
+    data["cards"].sort(key=lambda c: (c["topic"], c["id"]))
     CAT.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
     print(f"enrich: filled {done}/{len(todo)} card(s) with {MODEL}.")
     return 0
