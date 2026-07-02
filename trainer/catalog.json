@@ -11,7 +11,12 @@
       "subs": 1,
       "codePath": "Python Coding Interviews/python-sort-custom/submission-0.py",
       "code": "from typing import List\n\n\ndef get_word_length(word: str) -> int:\n    return len(word)\n\ndef get_abs_val(num: int) -> int:\n    return abs(num)\n\ndef sort_words(words: List[str]) -> List[str]:\n    return sorted(words, key=get_word_length, reverse=True)\n\n\ndef sort_numbers(numbers: List[int]) -> List[int]:\n    return sorted(numbers, key = get_abs_val)\n\n\n# do not modify below this line\nprint(sort_words([\"cherry\", \"apple\", \"blueberry\", \"banana\", \"watermelon\", \"zucchini\", \"kiwi\", \"pear\"]))\n\nprint(sort_numbers([1, -5, -3, 2, 4, 11, -19, 9, -2, 5, -6, 7, -4, 2, 6]))\n",
-      "enriched": null
+      "enriched": {
+        "ds": "built-in sort",
+        "time": "O(n log n)",
+        "space": "O(n)",
+        "insight": "Pass a key function to sorted() to order elements by a derived value without mutating the input list."
+      }
     },
     {
       "id": "python-sort-descending",
@@ -21,7 +26,12 @@
       "subs": 1,
       "codePath": "Python Coding Interviews/python-sort-descending/submission-0.py",
       "code": "from typing import List\n\n\ndef sort_words(words: List[str]) -> List[str]:\n    return sorted(words, reverse=True)\n\ndef sort_numbers(numbers: List[int]) -> List[int]:\n    return sorted(numbers, reverse=True)\n\ndef sort_decimals(numbers: List[float]) -> List[float]:\n    return sorted(numbers, reverse=True)\n\n\n\n# do not modify below this line\nprint(sort_words([\"cherry\", \"apple\", \"blueberry\", \"banana\", \"watermelon\", \"zucchini\", \"kiwi\", \"pear\"]))\n\nprint(sort_numbers([1, 5, 3, 2, 4, 11, 19, 9, 2, 5, 6, 7, 4, 2, 6]))\n\nprint(sort_decimals([3.14, 2.82, 6.433, 7.9, 21.555, 21.554]))\n",
-      "enriched": null
+      "enriched": {
+        "ds": "built-in sort",
+        "time": "O(n log n)",
+        "space": "O(n)",
+        "insight": "Python's sorted() with reverse=True returns a new list in descending order using Timsort."
+      }
     },
     {
       "id": "python-sort-lambda",
@@ -31,7 +41,12 @@
       "subs": 1,
       "codePath": "Python Coding Interviews/python-sort-lambda/submission-0.py",
       "code": "from typing import List\n\n\ndef sort_words(words: List[str]) -> List[str]:\n    return sorted(words, key=lambda word: len(word), reverse=True)\n\n\ndef sort_numbers(numbers: List[int]) -> List[int]:\n    return sorted(numbers, key=lambda num: abs(num))\n\n\n# do not modify below this line\nprint(sort_words([\"cherry\", \"apple\", \"blueberry\", \"banana\", \"watermelon\", \"zucchini\", \"kiwi\", \"pear\"]))\n\nprint(sort_numbers([1, -5, -3, 2, 4, 11, -19, 9, -2, 5, -6, 7, -4, 2, 6]))\n",
-      "enriched": null
+      "enriched": {
+        "ds": "built-in sort",
+        "time": "O(n log n)",
+        "space": "O(n)",
+        "insight": "Use sorted with a key lambda to order elements by a derived value without changing the original list."
+      }
     }
   ]
 }

@@ -46,6 +46,9 @@ def call(title: str, code: str):
         headers={
             "Authorization": f"Bearer {KEY}",
             "Content-Type": "application/json",
+            # urllib's default UA ("Python-urllib/x") trips Together's Cloudflare
+            # WAF (error 1010); a neutral UA passes.
+            "User-Agent": "pattern-trainer-enrich/1.0",
         },
     )
     try:
