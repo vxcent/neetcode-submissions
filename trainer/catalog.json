@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-01T22:54:38+00:00",
+  "generated": "2026-07-02T23:53:46+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 3,
+  "count": 4,
   "cards": [
     {
       "id": "python-sort-custom",
@@ -46,6 +46,21 @@
         "time": "O(n log n)",
         "space": "O(n)",
         "insight": "Use sorted with a key lambda to order elements by a derived value without changing the original list."
+      }
+    },
+    {
+      "id": "python-sorted-copy",
+      "title": "Sorted Copy",
+      "topic": "Python Coding Interviews",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Python Coding Interviews/python-sorted-copy/submission-0.py",
+      "code": "from typing import List\n\n\ndef sort_words(words: List[str]) -> List[str]:\n    output = sorted(words)\n    return output\n\n\ndef sort_numbers(numbers: List[int]) -> List[int]:\n    output = sorted(numbers, reverse=True, key=abs)\n    return output\n\n\n# do not modify below this line\noriginal_words = [\"cherry\", \"apple\", \"blueberry\", \"banana\", \"watermelon\", \"zucchini\", \"kiwi\", \"pear\"]\n\nprint(original_words)\nprint(sort_words(original_words))\n\noriginal_numbers = [1, -5, -3, 2, 4, 11, -19, 9, -2, 5, -6, 7, -4, 2, 6]\n\nprint(original_numbers)\nprint(sort_numbers(original_numbers))\n",
+      "enriched": {
+        "ds": "built-in sort",
+        "time": "O(n log n)",
+        "space": "O(n)",
+        "insight": "Use sorted with key and reverse to return a new sorted list while leaving the original unchanged."
       }
     }
   ]
