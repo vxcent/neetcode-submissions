@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>vxcent · neetcode-submissions</title>
+<style>
+  :root{--bg:#0d1117;--card:#161b22;--line:#232b36;--fg:#e6edf3;--muted:#9aa7b4;--accent:#4dd4c4;--accent2:#7c9cff}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 18px}
+  a{text-decoration:none;color:inherit}
+  h1{font-size:26px;margin:0 0 4px}
+  .sub{color:var(--muted);margin:0 0 28px;text-align:center}
+  .grid{display:grid;gap:16px;width:100%;max-width:720px}
+  @media(min-width:600px){.grid{grid-template-columns:1fr 1fr}}
+  .card{display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;transition:border-color .15s,transform .15s}
+  .card:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .card h2{margin:0 0 6px;font-size:18px}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  .emoji{font-size:30px;display:block;margin-bottom:10px}
+  footer{color:var(--muted);font-size:12.5px;margin-top:28px;text-align:center}
+  .repo{color:var(--accent2)}
+</style>
+</head>
+<body>
+  <h1>neetcode-submissions</h1>
+  <p class="sub">@vxcent · practice, prep, and a pattern trainer</p>
+  <div class="grid">
+    <a class="card" href="study/">
+      <span class="emoji">🧠</span>
+      <h2>Interview Prep →</h2>
+      <p>Python concurrency &amp; system design study kit. Diagrams, patterns, a 10-day plan, and progress tracking. Works offline.</p>
+    </a>
+    <a class="card" href="trainer/">
+      <span class="emoji">🃏</span>
+      <h2>Pattern Trainer →</h2>
+      <p>GitHub-synced flashcards of your NeetCode solutions with Big-O, pattern, and insight enrichment.</p>
+    </a>
+  </div>
+  <footer>Served by GitHub Pages · source: <a class="repo" href="https://github.com/vxcent/neetcode-submissions">github.com/vxcent/neetcode-submissions</a></footer>
+</body>
+</html>
