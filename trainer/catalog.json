@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-03T00:17:11+00:00",
+  "generated": "2026-07-03T00:22:58+00:00",
   "repo": "vxcent/neetcode-submissions",
   "count": 8,
   "cards": [
@@ -38,8 +38,8 @@
       "title": "Two Integer Sum",
       "topic": "Data Structures & Algorithms",
       "ext": "py",
-      "subs": 1,
-      "codePath": "Data Structures & Algorithms/two-integer-sum/submission-0.py",
+      "subs": 2,
+      "codePath": "Data Structures & Algorithms/two-integer-sum/submission-1.py",
       "code": "class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        hash_map = {}\n        output_list = []\n        for index, num in enumerate(nums):\n            difference_to_target = target - num\n            if difference_to_target in hash_map:\n                return [hash_map[difference_to_target], index]\n            hash_map[num] = index\n        return output_list",
       "enriched": {
         "ds": "hashmap",
