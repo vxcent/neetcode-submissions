@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-03T00:04:58+00:00",
+  "generated": "2026-07-03T00:17:11+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 7,
+  "count": 8,
   "cards": [
     {
       "id": "duplicate-integer",
@@ -26,7 +26,27 @@
       "subs": 1,
       "codePath": "Data Structures & Algorithms/is-anagram/submission-0.py",
       "code": "from collections import Counter\nclass Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        s_counter = Counter(s)\n        t_counter = Counter(t)\n        return s_counter == t_counter",
-      "enriched": null
+      "enriched": {
+        "ds": "hashmap",
+        "time": "O(n + m)",
+        "space": "O(1)",
+        "insight": "Two strings are anagrams iff their character frequency counts are identical."
+      }
+    },
+    {
+      "id": "two-integer-sum",
+      "title": "Two Integer Sum",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/two-integer-sum/submission-0.py",
+      "code": "class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        hash_map = {}\n        output_list = []\n        for index, num in enumerate(nums):\n            difference_to_target = target - num\n            if difference_to_target in hash_map:\n                return [hash_map[difference_to_target], index]\n            hash_map[num] = index\n        return output_list",
+      "enriched": {
+        "ds": "hashmap",
+        "time": "O(n)",
+        "space": "O(n)",
+        "insight": "Store each number's index in a hashmap so you can instantly find the complement when you reach it."
+      }
     },
     {
       "id": "python-sort-custom",
