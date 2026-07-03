@@ -1,8 +1,23 @@
 {
-  "generated": "2026-07-02T23:57:44+00:00",
+  "generated": "2026-07-03T00:02:03+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 5,
+  "count": 6,
   "cards": [
+    {
+      "id": "duplicate-integer",
+      "title": "Duplicate Integer",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/duplicate-integer/submission-1.py",
+      "code": "from collections import Counter\n\nclass Solution:\n    def hasDuplicate(self, nums: List[int]) -> bool:\n        occurance_counter = Counter(nums)\n        for k, v in occurance_counter.items():\n            if v > 1:\n                return True\n        return False",
+      "enriched": {
+        "ds": "hashmap",
+        "time": "O(n)",
+        "space": "O(n)",
+        "insight": "Use a hashmap to count occurrences and check if any count exceeds one."
+      }
+    },
     {
       "id": "python-sort-custom",
       "title": "Sort Custom",
