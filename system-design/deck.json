@@ -1,0 +1,517 @@
+{
+  "_comment": "Hand-authored System Design deck. Merged into trainer/catalog.json by scripts/build_catalog.py. Framework adapted from Hello Interview's delivery framework (https://www.hellointerview.com/learn/system-design/in-a-hurry/delivery). type=framework drills the R-C-A-H-D sequence; type=question applies it to a canonical problem.",
+  "cards": [
+    {
+      "id": "sd-framework-overview",
+      "type": "framework",
+      "title": "The R-C-A-H-D framework",
+      "difficulty": "Easy",
+      "front": "Recall the 5 steps of the delivery framework and their time budgets.",
+      "sd": {
+        "time": "~35 min total",
+        "recall": [
+          "R — Requirements (~5m): functional + non-functional + capacity estimate",
+          "C — Core Entities (~2m): the nouns your API & DB use",
+          "A — API / Interface (~5m): one endpoint per functional requirement",
+          "(Data Flow ~5m: optional, only for data-pipeline questions)",
+          "H — High-Level Design (~10-15m): boxes & arrows for the functional reqs",
+          "D — Deep Dives (~10m): defend the non-functional reqs & bottlenecks"
+        ]
+      }
+    },
+    {
+      "id": "sd-framework-requirements",
+      "type": "framework",
+      "title": "Step R — Requirements",
+      "difficulty": "Easy",
+      "front": "What three things do you produce in the Requirements step, and how long?",
+      "sd": {
+        "time": "~5 min",
+        "recall": [
+          "Functional: 'Users should be able to...' — the 2-3 CORE features only, park the rest as out-of-scope",
+          "Non-functional (the -ilities): scale, latency, consistency vs availability (CAP), durability, read:write ratio",
+          "Capacity estimate: only numbers that CHANGE a decision (e.g. 5 TB/day -> partition; 1M RPS -> CDN+cache)",
+          "This list is the contract your Deep Dives will defend later"
+        ]
+      }
+    },
+    {
+      "id": "sd-framework-entities",
+      "type": "framework",
+      "title": "Step C — Core Entities",
+      "difficulty": "Easy",
+      "front": "What is the Core Entities step for, and how long?",
+      "sd": {
+        "time": "~2 min",
+        "recall": [
+          "Name the handful of nouns your system centers on (User, Tweet, Ride, File...)",
+          "They become your data model and the payloads your API returns",
+          "A bulleted list is enough — do NOT design the schema yet",
+          "Gives you shared vocabulary with the interviewer before you build"
+        ]
+      }
+    },
+    {
+      "id": "sd-framework-api",
+      "type": "framework",
+      "title": "Step A — API / Interface",
+      "difficulty": "Easy",
+      "front": "How do you approach the API step?",
+      "sd": {
+        "time": "~5 min",
+        "recall": [
+          "One endpoint per functional requirement — no more",
+          "REST for CRUD-ish systems, RPC for action-y ones",
+          "Note pagination (cursor), streaming, or websockets where relevant",
+          "Show a reasonable interface, then MOVE ON — don't gold-plate"
+        ]
+      }
+    },
+    {
+      "id": "sd-framework-hld",
+      "type": "framework",
+      "title": "Step H — High-Level Design",
+      "difficulty": "Easy",
+      "front": "What is the goal of the High-Level Design step?",
+      "sd": {
+        "time": "~10-15 min",
+        "recall": [
+          "Minimum components that make EVERY functional requirement work end-to-end",
+          "Typical spine: client -> gateway/LB -> service -> DB / cache / queue / blob store",
+          "Trace one request all the way through the boxes",
+          "Breadth first — resist deep-diving here"
+        ]
+      }
+    },
+    {
+      "id": "sd-framework-deepdives",
+      "type": "framework",
+      "title": "Step D — Deep Dives",
+      "difficulty": "Easy",
+      "front": "What do Deep Dives cover, and why do they matter?",
+      "sd": {
+        "time": "~10 min",
+        "recall": [
+          "Go back to the NON-functional list and defend each item",
+          "Scaling a hot component, caching, partitioning/sharding, a queue for spikes",
+          "Consistency handling, a specific algorithm choice, failure/edge cases",
+          "This is where senior / staff signal is earned"
+        ]
+      }
+    },
+    {
+      "id": "sd-framework-nfr-checklist",
+      "type": "framework",
+      "title": "Non-functional requirements checklist",
+      "difficulty": "Easy",
+      "front": "Which non-functional dimensions do you scan in every question?",
+      "sd": {
+        "time": "part of R",
+        "recall": [
+          "Scale — reads/writes per second, data volume, fan-out",
+          "Latency — what must feel instant (reads) vs what can lag (writes/analytics)",
+          "Consistency vs Availability — where is stale data OK vs not (CAP)",
+          "Durability — can we ever lose this data?",
+          "Read:write ratio — usually read-heavy; decides where caches/replicas go",
+          "Pick the 3-4 that actually bite THIS system; don't list all of them"
+        ]
+      }
+    },
+    {
+      "id": "sd-tinyurl",
+      "type": "question",
+      "title": "Design a URL Shortener (TinyURL)",
+      "difficulty": "Easy",
+      "front": "Walk R-C-A-H-D for a URL shortener.",
+      "sd": {
+        "functional": [
+          "Create a short URL from a long URL (optional custom alias & expiry)",
+          "Redirect a short URL to the original long URL"
+        ],
+        "nonfunctional": [
+          "Read-heavy (100:1) — redirects must be low-latency",
+          "High availability for redirects; short codes must be unique",
+          "Scale: ~1B URLs, redirects at high RPS"
+        ],
+        "entities": ["URL (shortCode, longUrl, userId, createdAt, expiry)"],
+        "api": [
+          "POST /urls {longUrl, alias?, expiry?} -> {shortUrl}",
+          "GET /{shortCode} -> 302 redirect to longUrl"
+        ],
+        "hld": [
+          "Client -> API service -> DB (key-value: shortCode -> longUrl)",
+          "Redirect path: read shortCode, fetch longUrl, return 302",
+          "Cache hot short codes (Redis) in front of the DB"
+        ],
+        "deepDives": [
+          "Unique code generation: counter + base62 (short, sequential) vs hash-of-URL (dedupes, needs collision check). Counter via a distributed range service / Redis INCR",
+          "Scale reads: CDN + Redis cache; DB read replicas — most redirects never hit primary",
+          "Partition the KV store by shortCode; short codes are ~7 base62 chars for ~3.5T combos"
+        ]
+      }
+    },
+    {
+      "id": "sd-twitter-feed",
+      "type": "question",
+      "title": "Design Twitter / a News Feed",
+      "difficulty": "Hard",
+      "front": "Walk R-C-A-H-D for a social news feed.",
+      "sd": {
+        "functional": [
+          "Post a tweet",
+          "Follow users",
+          "View a home timeline of tweets from people you follow"
+        ],
+        "nonfunctional": [
+          "Read-heavy; timeline load must be fast (<200ms)",
+          "Eventual consistency OK (a tweet can appear a few seconds late)",
+          "Handle celebrity fan-out (millions of followers)"
+        ],
+        "entities": ["User", "Tweet", "Follow (followerId, followeeId)"],
+        "api": [
+          "POST /tweets {text} -> {tweetId}",
+          "POST /follow {followeeId}",
+          "GET /feed?cursor= -> [tweets]"
+        ],
+        "hld": [
+          "Write path: Tweet service -> Tweet DB + fan-out service",
+          "Fan-out-on-write: push tweetId into each follower's precomputed timeline cache (Redis list)",
+          "Read path: GET /feed reads the precomputed list — fast"
+        ],
+        "deepDives": [
+          "Celebrity problem: hybrid fan-out — push for normal users, but pull (merge at read time) for users who follow celebrities, to avoid millions of writes per tweet",
+          "Feed ranking: store tweetIds, hydrate tweet content from cache at read time",
+          "Storage: shard tweets by userId; timeline caches in Redis with a bounded length"
+        ]
+      }
+    },
+    {
+      "id": "sd-chat-whatsapp",
+      "type": "question",
+      "title": "Design a Chat App (WhatsApp / Messenger)",
+      "difficulty": "Hard",
+      "front": "Walk R-C-A-H-D for real-time 1:1 and group chat.",
+      "sd": {
+        "functional": [
+          "Send/receive messages in real time (1:1 and group)",
+          "Delivery & read receipts",
+          "Deliver messages sent while a user is offline"
+        ],
+        "nonfunctional": [
+          "Low latency for delivery; ordered per conversation",
+          "High availability; messages must not be lost (durable)",
+          "Huge concurrent connection count"
+        ],
+        "entities": ["User", "Message", "Conversation", "Membership"],
+        "api": [
+          "WebSocket: send(convId, text); server pushes incoming messages",
+          "GET /conversations/{id}/messages?cursor= (history sync)"
+        ],
+        "hld": [
+          "Clients hold persistent WebSocket to a Chat/Gateway server",
+          "A registry (Redis) maps userId -> which server holds their connection",
+          "Message service persists then routes to the recipient's server; offline -> stored for pull on reconnect"
+        ],
+        "deepDives": [
+          "Connection routing at scale: pub/sub (Redis/Kafka) between gateway servers so any server can reach any online user",
+          "Ordering & delivery: per-conversation sequence numbers; ACKs drive sent/delivered/read state",
+          "Offline delivery: durable message store + per-user 'last read' offset; sync on reconnect. Group fan-out writes to each member's inbox"
+        ]
+      }
+    },
+    {
+      "id": "sd-uber",
+      "type": "question",
+      "title": "Design Uber (ride-sharing)",
+      "difficulty": "Hard",
+      "front": "Walk R-C-A-H-D for matching riders to nearby drivers.",
+      "sd": {
+        "functional": [
+          "Riders request a ride from A to B",
+          "Match rider to a nearby available driver",
+          "Track driver location live during the trip"
+        ],
+        "nonfunctional": [
+          "Low latency matching; frequent location updates (write-heavy)",
+          "High availability; strong consistency on a match (one driver, one rider)",
+          "Geospatial queries at city scale"
+        ],
+        "entities": ["Rider", "Driver", "Ride", "Location"],
+        "api": [
+          "POST /rides {pickup, dropoff} -> {rideId}",
+          "POST /drivers/location {lat, lng} (frequent)",
+          "WebSocket for match + live trip updates"
+        ],
+        "hld": [
+          "Location service ingests high-frequency driver pings into an in-memory geo index",
+          "Ride service queries nearby drivers, offers the ride, confirms a match",
+          "Notification via websocket to matched driver & rider"
+        ],
+        "deepDives": [
+          "Geospatial index: geohash or QuadTree / H3 cells; query the rider's cell + neighbors for candidate drivers",
+          "Location writes: don't persist every ping to the primary DB — keep current location in Redis, only snapshot periodically",
+          "Match consistency: lock/atomic claim so a driver isn't double-booked; timeout & re-offer if a driver doesn't accept"
+        ]
+      }
+    },
+    {
+      "id": "sd-ticketmaster",
+      "type": "question",
+      "title": "Design Ticketmaster",
+      "difficulty": "Hard",
+      "front": "Walk R-C-A-H-D for booking event seats.",
+      "sd": {
+        "functional": [
+          "Browse events and available seats",
+          "Reserve/hold a seat, then purchase it"
+        ],
+        "nonfunctional": [
+          "Strong consistency — never sell the same seat twice",
+          "Handle massive spikes (popular on-sales / thundering herd)",
+          "Reads (browsing) far outnumber writes (booking)"
+        ],
+        "entities": ["Event", "Venue", "Seat", "Booking", "User"],
+        "api": [
+          "GET /events/{id}/seats",
+          "POST /bookings {seatIds} -> holds seats (temporary)",
+          "POST /bookings/{id}/confirm -> payment + finalize"
+        ],
+        "hld": [
+          "Booking service with a relational DB (ACID) as source of truth for seat state",
+          "Search/browse served from a read-optimized store + cache",
+          "Seat hold with a TTL, then confirm on payment"
+        ],
+        "deepDives": [
+          "No double-booking: reserve a seat with a distributed lock or a DB row lock / status transition (AVAILABLE->HELD->BOOKED) inside a transaction",
+          "Holds expire: TTL (Redis key or a reservation row + expiry sweeper) auto-releases unpaid seats",
+          "Thundering herd on hot events: a virtual waiting queue admits users at a controlled rate; cache the seat map and update via events"
+        ]
+      }
+    },
+    {
+      "id": "sd-dropbox",
+      "type": "question",
+      "title": "Design Dropbox / Google Drive",
+      "difficulty": "Hard",
+      "front": "Walk R-C-A-H-D for file storage & sync.",
+      "sd": {
+        "functional": [
+          "Upload / download files",
+          "Sync files across a user's devices",
+          "Share files with other users"
+        ],
+        "nonfunctional": [
+          "Durable — never lose a file; highly available",
+          "Large files (GBs); efficient sync of small changes",
+          "Read-heavy (downloads)"
+        ],
+        "entities": ["User", "File", "FileMetadata", "Chunk", "Share"],
+        "api": [
+          "POST /files (multipart / presigned upload)",
+          "GET /files/{id} (presigned download)",
+          "GET /changes?since= (sync deltas)"
+        ],
+        "hld": [
+          "Metadata service (DB) separate from blob storage (S3) for the bytes",
+          "Client uploads chunks directly to blob store via presigned URLs",
+          "Sync: clients poll/subscribe to a changes feed keyed on metadata versions"
+        ],
+        "deepDives": [
+          "Chunking: split files into fixed chunks, hash each; only upload/download changed chunks (dedup + fast sync)",
+          "Upload path: presigned S3 URLs so bytes bypass app servers; metadata committed after chunks land",
+          "Sync & conflicts: per-file version vectors; CDN for downloads; large files use multipart upload"
+        ]
+      }
+    },
+    {
+      "id": "sd-youtube",
+      "type": "question",
+      "title": "Design YouTube / Netflix (video streaming)",
+      "difficulty": "Hard",
+      "front": "Walk R-C-A-H-D for video upload & streaming.",
+      "sd": {
+        "functional": [
+          "Upload a video",
+          "Stream/watch a video (adaptive quality)"
+        ],
+        "nonfunctional": [
+          "Very read-heavy; smooth playback (low buffering) globally",
+          "Durable storage of originals; huge bandwidth",
+          "Upload is async / eventually available"
+        ],
+        "entities": ["Video", "VideoMetadata", "User", "Comment"],
+        "api": [
+          "POST /videos (upload original)",
+          "GET /videos/{id} -> manifest + segment URLs",
+          "GET /watch/{id}"
+        ],
+        "hld": [
+          "Upload -> raw blob store -> async transcoding pipeline (multiple resolutions/bitrates)",
+          "Transcoded segments stored in blob store, fronted by a CDN",
+          "Player fetches an adaptive-bitrate manifest (HLS/DASH), pulls segments from nearest CDN edge"
+        ],
+        "deepDives": [
+          "Transcoding: fan-out per (resolution x codec) as parallel jobs via a queue; segment the video so segments transcode independently",
+          "Delivery: CDN is the whole game — cache segments at the edge; ABR lets the client drop quality instead of buffering",
+          "Metadata & views: view counts via an async aggregation pipeline, not synchronous DB writes"
+        ]
+      }
+    },
+    {
+      "id": "sd-rate-limiter",
+      "type": "question",
+      "title": "Design a Distributed Rate Limiter",
+      "difficulty": "Medium",
+      "front": "Walk R-C-A-H-D for limiting request rates across a fleet.",
+      "sd": {
+        "functional": [
+          "Allow/deny a request based on a per-client limit (e.g. 100 req/min)",
+          "Work consistently across many app servers"
+        ],
+        "nonfunctional": [
+          "Very low latency (it's in the hot path of every request)",
+          "Highly available; approximate limits acceptable under failure",
+          "Scales with request volume"
+        ],
+        "entities": ["Client/APIKey", "Rule (limit, window)", "Counter"],
+        "api": ["Internal: allow(clientId) -> boolean (called by gateway/middleware)"],
+        "hld": [
+          "Rate-limit check runs at the API gateway / middleware",
+          "Shared counter store (Redis) keyed by clientId so all servers agree",
+          "On each request: atomically increment & compare to limit"
+        ],
+        "deepDives": [
+          "Algorithm: token bucket (allows bursts, smooth refill) or sliding-window counter (accurate, avoids fixed-window edge bursts)",
+          "Atomicity across servers: Redis INCR/EXPIRE or a Lua script for check-and-increment in one round trip",
+          "Failure mode: fail-open (allow) vs fail-closed; local in-memory fallback + async sync to reduce Redis pressure"
+        ]
+      }
+    },
+    {
+      "id": "sd-web-crawler",
+      "type": "question",
+      "title": "Design a Web Crawler",
+      "difficulty": "Medium",
+      "front": "Walk R-C-A-H-D for crawling the web at scale.",
+      "sd": {
+        "functional": [
+          "Fetch pages starting from seed URLs",
+          "Extract links and keep crawling",
+          "Store page content for downstream (e.g. indexing)"
+        ],
+        "nonfunctional": [
+          "Massive scale (billions of pages); high throughput",
+          "Politeness — don't hammer one domain; respect robots.txt",
+          "Fault tolerant & resumable"
+        ],
+        "entities": ["URL", "Page", "Domain", "CrawlFrontier"],
+        "api": ["Internal pipeline — no external API"],
+        "hld": [
+          "URL frontier (queue) -> fetcher workers -> parser -> store + extract links -> back into frontier",
+          "Seen-URL set to avoid re-crawling",
+          "Content written to blob store"
+        ],
+        "deepDives": [
+          "Frontier design: prioritized + per-domain queues with rate limits for politeness",
+          "Dedup: bloom filter / hashed URL set for 'have I seen this?' at scale; content hashing for near-duplicate pages",
+          "Scale & resilience: partition the frontier by domain hash; workers are stateless & retry; checkpoint progress"
+        ]
+      }
+    },
+    {
+      "id": "sd-notification",
+      "type": "question",
+      "title": "Design a Notification Service",
+      "difficulty": "Medium",
+      "front": "Walk R-C-A-H-D for multi-channel notifications.",
+      "sd": {
+        "functional": [
+          "Send notifications across channels (push, SMS, email)",
+          "Support user preferences and templates"
+        ],
+        "nonfunctional": [
+          "High throughput, spiky load; at-least-once delivery",
+          "Decoupled from senders; resilient to third-party (APNs/FCM/Twilio) failures"
+        ],
+        "entities": ["Notification", "User", "Channel", "Template", "Preference"],
+        "api": ["POST /notifications {userId, type, payload}"],
+        "hld": [
+          "Producers publish notification events to a message queue (Kafka)",
+          "Channel workers consume, render templates, call the provider (APNs/FCM/SES/Twilio)",
+          "Preference service filters/opt-outs before dispatch"
+        ],
+        "deepDives": [
+          "Queue decouples spikes from delivery; per-channel worker pools scale independently",
+          "Reliability: retries with backoff + dead-letter queue; idempotency keys to avoid duplicate sends",
+          "Rate limiting per provider; batching; user-level dedup/throttle so users aren't spammed"
+        ]
+      }
+    },
+    {
+      "id": "sd-leaderboard",
+      "type": "question",
+      "title": "Design a Leaderboard / Top-K",
+      "difficulty": "Medium",
+      "front": "Walk R-C-A-H-D for a real-time ranked leaderboard.",
+      "sd": {
+        "functional": [
+          "Update a player's score",
+          "Get top-K players and a player's own rank"
+        ],
+        "nonfunctional": [
+          "Low-latency reads of ranks; frequent score updates",
+          "Real-time-ish; huge number of players"
+        ],
+        "entities": ["Player", "Score", "Leaderboard (e.g. per game/season)"],
+        "api": [
+          "POST /scores {playerId, delta}",
+          "GET /leaderboard/top?k=",
+          "GET /leaderboard/rank/{playerId}"
+        ],
+        "hld": [
+          "Redis Sorted Set (ZSET) per leaderboard: score-ordered, O(log n) update, O(log n + k) top-k",
+          "Writes update the ZSET; reads query ranks directly",
+          "Durable copy of scores in a DB behind the cache"
+        ],
+        "deepDives": [
+          "Sorted set gives rank & top-k cheaply; ZADD to update, ZREVRANGE for top-k, ZREVRANK for a player's rank",
+          "Scale: shard leaderboards by game/region; for one giant board, partition by score range and merge top-k across shards",
+          "Time windows (daily/weekly): separate ZSETs with TTL; persist to DB for history"
+        ]
+      }
+    },
+    {
+      "id": "sd-ad-click-aggregator",
+      "type": "question",
+      "title": "Design an Ad Click Aggregator",
+      "difficulty": "Hard",
+      "front": "Walk R-C-A-H-D for aggregating ad-click metrics.",
+      "sd": {
+        "functional": [
+          "Ingest ad-click events at high volume",
+          "Query aggregated metrics (clicks per ad over time windows)"
+        ],
+        "nonfunctional": [
+          "Very high write throughput; near-real-time analytics",
+          "Durability of raw events; approximate is OK for fast dashboards",
+          "This is a data-pipeline question — add a Data Flow"
+        ],
+        "entities": ["ClickEvent", "Ad", "Aggregate (adId, window, count)"],
+        "api": [
+          "POST /click {adId, userId, ts}",
+          "GET /metrics?adId=&window="
+        ],
+        "hld": [
+          "Clicks -> ingestion service -> stream (Kafka)",
+          "Stream processor (Flink/Spark) aggregates into time buckets",
+          "Aggregates written to an OLAP store; queried by dashboards"
+        ],
+        "deepDives": [
+          "Two paths (lambda-ish): fast approximate stream aggregation for live dashboards + a batch job over raw events for exact/corrected numbers",
+          "Windowing: tumbling windows (e.g. per-minute) keyed by adId; handle late events with a grace period",
+          "Scale writes: partition the stream by adId; keep raw events in cheap durable storage for reprocessing"
+        ]
+      }
+    }
+  ]
+}
