@@ -1,8 +1,23 @@
 {
-  "generated": "2026-07-03T00:22:58+00:00",
+  "generated": "2026-07-03T15:56:34+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 8,
+  "count": 9,
   "cards": [
+    {
+      "id": "anagram-groups",
+      "title": "Anagram Groups",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/anagram-groups/submission-1.py",
+      "code": "from collections import Counter\n# First create a counter of words across each word\n# Traverse the list with this approach and put each one into the map\n# indexed by counter item's frozenset\nclass Solution:\n    def groupAnagrams(self, strs: List[str]) -> List[List[str]]:\n        anagram_hashmap = {}\n        for word in strs:\n            char_counter_frozenset = frozenset(Counter(word).items())\n            if char_counter_frozenset in anagram_hashmap:\n                anagram_hashmap[char_counter_frozenset].append(word)\n            else: \n                anagram_hashmap[char_counter_frozenset] = [word]\n        # need to output list from map\n        output = []\n        for word_list in anagram_hashmap.values():\n            output.append(word_list)\n        return output",
+      "enriched": {
+        "ds": "hashmap",
+        "time": "O(n * m)",
+        "space": "O(n * m)",
+        "insight": "Use a hashable canonical signature (frozenset of Counter items) as the hashmap key to group anagrams together."
+      }
+    },
     {
       "id": "duplicate-integer",
       "title": "Duplicate Integer",
