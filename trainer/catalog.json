@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-03T00:02:03+00:00",
+  "generated": "2026-07-03T00:04:58+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 6,
+  "count": 7,
   "cards": [
     {
       "id": "duplicate-integer",
@@ -17,6 +17,16 @@
         "space": "O(n)",
         "insight": "Use a hashmap to count occurrences and check if any count exceeds one."
       }
+    },
+    {
+      "id": "is-anagram",
+      "title": "Is Anagram",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/is-anagram/submission-0.py",
+      "code": "from collections import Counter\nclass Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        s_counter = Counter(s)\n        t_counter = Counter(t)\n        return s_counter == t_counter",
+      "enriched": null
     },
     {
       "id": "python-sort-custom",
