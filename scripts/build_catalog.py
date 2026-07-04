@@ -14,9 +14,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "trainer" / "catalog.json"
+SD_DECK = ROOT / "system-design" / "deck.json"
 SUB_RE = re.compile(r"^submission-(\d+)\.([A-Za-z0-9]+)$")
 # folders that never hold submissions
-SKIP = {".git", ".github", "trainer", "scripts", "node_modules"}
+SKIP = {".git", ".github", "trainer", "scripts", "node_modules", "system-design"}
 
 
 def prettify(slug: str) -> str:
@@ -53,6 +54,42 @@ def load_previous():
     return {}
 
 
+def load_system_design():
+    """Hand-authored System Design deck -> catalog cards (kind=system-design).
+
+    These carry their answer content in the `sd` field instead of `code`, so
+    enrich.py skips them (it only touches cards with `code`) and the trainer
+    renders them with the R-C-A-H-D scaffold under the System Design tab.
+    """
+    if not SD_DECK.exists():
+        return []
+    try:
+        deck = json.loads(SD_DECK.read_text())
+    except Exception as e:
+        print(f"system-design: could not parse deck.json ({e}) — skipping.", file=sys.stderr)
+        return []
+    cards = []
+    for d in deck.get("cards", []):
+        kind_type = d.get("type", "question")
+        topic = "Delivery Framework" if kind_type == "framework" else "System Design Questions"
+        cards.append({
+            "id": d["id"],
+            "title": d.get("title", d["id"]),
+            "topic": topic,
+            "kind": "system-design",
+            "type": kind_type,
+            "difficulty": d.get("difficulty", "—"),
+            "front": d.get("front", ""),
+            "sd": d.get("sd", {}),
+            "ext": None,
+            "subs": 1,
+            "codePath": None,
+            "code": "",          # empty -> enrich.py leaves it alone
+            "enriched": None,
+        })
+    return cards
+
+
 def main():
     prev = load_previous()
     cards = []
@@ -77,6 +114,7 @@ def main():
             card["enriched"] = old["enriched"]
         cards.append(card)
 
+    cards.extend(load_system_design())
     cards.sort(key=lambda c: (c["topic"], c["id"]))
     # Keep the file byte-stable when nothing substantive changed, so idle runs
     # don't churn a new commit every time (the timestamp would otherwise differ).

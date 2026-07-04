@@ -94,6 +94,24 @@
   .flag{position:absolute;top:20px;font-weight:900;font-size:26px;padding:6px 14px;border-radius:10px;border:3px solid;opacity:0;text-transform:uppercase}
   .flag.got{right:18px;color:var(--green);border-color:var(--green);transform:rotate(12deg)}
   .flag.rusty{left:18px;color:var(--red);border-color:var(--red);transform:rotate(-12deg)}
+  /* system design cards */
+  .sdcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+  .sdcard.due{border-color:#3f7a2e}
+  .sdhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .sdhead .t{font-weight:800;font-size:16px;margin-right:auto}
+  .sdtime{font-size:11px;color:var(--muted);font-weight:700}
+  .sdfront{color:var(--text);font-size:13.5px;line-height:1.5}
+  .sdback{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+  .sdsec{margin-bottom:10px}
+  .sdsec .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--blue);font-weight:800;margin-bottom:4px}
+  .sdsec ul{margin:0;padding-left:18px}.sdsec li{font-size:12.5px;line-height:1.5;margin-bottom:3px}
+  .sdactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .sdactions button{padding:8px 14px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--card2);color:var(--text)}
+  .sdactions .got{border-color:var(--green);color:var(--green)}
+  .sdactions .rusty{border-color:var(--red);color:var(--red)}
+  .rcahd{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .rcahd span{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:11px;color:var(--muted);font-weight:600}
+  .rcahd b{color:var(--gold)}
 </style>
 </head>
 <body>
@@ -108,6 +126,7 @@
   <nav>
     <button data-tab="today" class="active">Today</button>
     <button data-tab="cards">Cards 🃏</button>
+    <button data-tab="sd">System Design 🏛️</button>
     <button data-tab="topics">Topics</button>
     <button data-tab="weak">Weak Spots</button>
     <button data-tab="log">Mistake Log</button>
@@ -129,6 +148,19 @@
       <button class="pass" onclick="startReview()" id="reviewBtn">Swipe review</button>
     </div>
     <div class="grid" id="cardGrid"></div>
+  </section>
+
+  <section id="tab-sd" class="hide">
+    <div class="card">
+      <b style="font-size:16px">🏛️ System Design — the R·C·A·H·D framework</b>
+      <p class="muted">Hello Interview's delivery framework. Read each card's cue, recall your answer out loud, reveal to check, then rate yourself. Cards run on the same spaced-repetition engine as your DSA cards.</p>
+      <div class="rcahd"><span><b>R</b>equirements ~5m</span><span><b>C</b>ore Entities ~2m</span><span><b>A</b>PI ~5m</span><span><b>H</b>igh-Level Design ~10-15m</span><span><b>D</b>eep Dives ~10m</span></div>
+      <p class="muted" id="sdDue" style="margin-top:10px"></p>
+    </div>
+    <h2>Framework drills</h2>
+    <div id="sdFramework"></div>
+    <h2>Design questions</h2>
+    <div id="sdQuestions"></div>
   </section>
 
   <section id="tab-topics" class="hide">
@@ -243,6 +275,7 @@ function touchStreak(){const t=todayISO();if(S.lastActive===t)return;if(S.lastAc
 function prettify(slug){return slug.replace(/^python-/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());}
 function getProblem(id){if(P_BY_ID[id])return P_BY_ID[id];const s=SYNCED[id];if(s)return{id,title:s.title,slug:id,topic:s.topic,diff:s.diff||"—",g75:false,synced:true};const pr=S.prog[id]||{};return{id,title:pr.title||prettify(id),slug:id,topic:pr.topic||"Synced",diff:"—",synced:true};}
 function allProblemsWithProg(){const ids=new Set([...PROBLEMS.map(p=>p.id),...Object.keys(S.prog)]);return[...ids].map(getProblem);}
+function isSD(id){const pr=S.prog[id];if(pr&&pr.sdCard)return true;const s=SYNCED[id];return !!(s&&s.kind==='system-design');}
 function rarity(diff){return diff==="Easy"?"Common":diff==="Medium"?"Rare":diff==="Hard"?"Epic":"Standard";}
 /* merged card metadata: user override (prog.card) wins over Claude enrichment (SYNCED.enriched) */
 function cardData(id){const pr=S.prog[id]||{},c=pr.card||{},e=(SYNCED[id]||{}).enriched||{};return{ds:c.ds||e.ds||"",time:c.time||e.time||"",space:c.space||e.space||"",insight:c.insight||e.insight||"",code:(SYNCED[id]||{}).code||"",ext:(SYNCED[id]||{}).ext||"",auto:!c.ds&&!!e.ds};}
@@ -256,9 +289,9 @@ async function loadCatalog(silent){
     if(silent&&cat.generated===S.catalogAt)return; // unchanged
     let minted=0;const t=todayISO();
     (cat.cards||[]).forEach(c=>{
-      SYNCED[c.id]={title:c.title,topic:c.topic,ext:c.ext,subs:c.subs,code:c.code,enriched:c.enriched,diff:c.difficulty||"—"};
-      if(!S.prog[c.id]&&!P_BY_ID[c.id]){S.prog[c.id]={box:1,due:addDaysISO(t,1),attempts:1,lastResult:'pass',synced:true,firstSeen:t};minted++;}
-      else if(S.prog[c.id])S.prog[c.id].synced=true;
+      SYNCED[c.id]={title:c.title,topic:c.topic,ext:c.ext,subs:c.subs,code:c.code,enriched:c.enriched,diff:c.difficulty||c.diff||"—",kind:c.kind,type:c.type,sd:c.sd,front:c.front};
+      if(!S.prog[c.id]&&!P_BY_ID[c.id]){S.prog[c.id]={box:1,due:addDaysISO(t,1),attempts:1,lastResult:'pass',synced:true,firstSeen:t};if(c.kind==='system-design')S.prog[c.id].sdCard=true;minted++;}
+      else if(S.prog[c.id]){S.prog[c.id].synced=true;if(c.kind==='system-design')S.prog[c.id].sdCard=true;}
     });
     S.catalogAt=cat.generated;save();updateSyncInfo(cat.generated);render();
     if(minted)toast(`${minted} new card${minted>1?'s':''} synced 🃏`);
@@ -282,7 +315,7 @@ function render(){
   $("#revCount").textContent=revs.length?`(${revs.length})`:"";
   $("#reviews").innerHTML=revs.length?revs.map(p=>probRow(p,"review")).join(""):`<div class="empty">No reviews due — your memory's holding.</div>`;
   $("#news").innerHTML=news.length?news.map(p=>probRow(p,"new")).join(""):`<div class="empty">No new problems queued for your filter.</div>`;
-  renderCards();renderTopics();renderWeak();renderLog();
+  renderCards();renderSD();renderTopics();renderWeak();renderLog();
   $("#setNew").value=S.settings.newPerDay;$("#setRev").value=S.settings.revCap;$("#setG75").value=S.settings.g75only?"yes":"no";
 }
 function dots(box){let h='<span class="dots">';for(let i=1;i<=5;i++)h+=`<i class="${i<=box?'on':''}"></i>`;return h+'</span>';}
@@ -290,7 +323,7 @@ function probRow(p,kind){const pr=S.prog[p.id];const failing=pr&&pr.lastResult==
   return `<div class="prob">${badge}<div class="main"><div class="title">${esc(p.title)}</div><div class="meta"><span class="diff d-${p.diff}">${p.diff}</span>${p.g75?'<span class="g75">GRIND 75</span>':''}<span>${esc(p.topic)}</span>${pr?dots(pr.box):''}${due?`<span>· ${due}</span>`:''}</div></div><div class="actions"><a class="solve" href="https://leetcode.com/problems/${p.slug}/" target="_blank" rel="noopener">Solve ↗</a><button class="pass" onclick="openModal('${p.id}')">Log</button></div></div>`;}
 
 function renderCards(){
-  const items=allProblemsWithProg().filter(p=>S.prog[p.id]);
+  const items=allProblemsWithProg().filter(p=>S.prog[p.id]&&!isSD(p.id));
   const due=items.filter(p=>{const pr=S.prog[p.id];return pr.due&&pr.due<=todayISO();}).length;
   $("#reviewBtn").textContent=due?`Swipe review (${due} due)`:"Swipe review";
   $("#cardsBlurb").textContent=items.length?`${items.length} card${items.length>1?'s':''} collected · ${due} due for review.`:"Solve a problem on NeetCode — the card syncs here automatically.";
@@ -310,10 +343,38 @@ function cardHTML(p){const pr=S.prog[p.id],d=cardData(p.id),rar=rarity(p.diff);
 function cssId(id){return id.replace(/[^a-z0-9]/gi,'_');}
 function flipCard(id){document.getElementById('bc-'+cssId(id)).classList.toggle('flipped');}
 
+/* ---------- system design deck (same SRS engine) ---------- */
+function sdList(){return allProblemsWithProg().filter(p=>isSD(p.id)&&S.prog[p.id]);}
+function sdSec(lbl,arr){if(!arr||!arr.length)return'';return `<div class="sdsec"><div class="lbl">${lbl}</div><ul>${arr.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;}
+function sdBackHTML(type,sd){sd=sd||{};
+  if(type==='framework')return sdSec(sd.time?'Recall · '+esc(sd.time):'Recall',sd.recall);
+  return sdSec('R · Functional',sd.functional)+sdSec('R · Non-functional',sd.nonfunctional)+sdSec('C · Core entities',sd.entities)+sdSec('A · API',sd.api)+sdSec('H · High-level design',sd.hld)+sdSec('D · Deep dives',sd.deepDives);
+}
+function sdCardHTML(p){const pr=S.prog[p.id],s=SYNCED[p.id]||{},sd=s.sd||{};const due=pr.due&&pr.due<=todayISO();
+  const time=(s.type==='framework'&&sd.time)?`<span class="sdtime">⏱ ${esc(sd.time)}</span>`:'';
+  return `<div class="sdcard ${due?'due':''}"><div class="sdhead"><span class="t">${esc(p.title)}</span>${p.diff&&p.diff!=='—'?`<span class="diff d-${p.diff}">${esc(p.diff)}</span>`:''}${time}${dots(pr.box)}${due?'<span class="badge b-review">due</span>':''}</div>
+    <div class="sdfront">${esc(s.front||'Recall your answer, then reveal to check.')}</div>
+    <div class="sdback hide" id="sdb-${cssId(p.id)}">${sdBackHTML(s.type,sd)}</div>
+    <div class="sdactions"><button id="sdr-${cssId(p.id)}" onclick="revealSD('${p.id}')">Reveal R·C·A·H·D</button><button class="got" onclick="rateSD('${p.id}',true)">✅ Delivered</button><button class="rusty" onclick="rateSD('${p.id}',false)">😵 Rusty</button></div>
+  </div>`;}
+function renderSD(){
+  const items=sdList(),t=todayISO();
+  const due=items.filter(p=>{const pr=S.prog[p.id];return pr.due&&pr.due<=t;}).length;
+  const el=$("#sdDue");if(el)el.textContent=items.length?(due?`${due} card${due>1?'s':''} due for review today.`:`All ${items.length} cards scheduled — nothing due today.`):'Cards sync from system-design/deck.json once the catalog rebuilds.';
+  const byDue=arr=>arr.slice().sort((a,b)=>((S.prog[a.id].due<=t?0:1)-(S.prog[b.id].due<=t?0:1))||S.prog[a.id].due.localeCompare(S.prog[b.id].due));
+  const fw=byDue(items.filter(p=>(SYNCED[p.id]||{}).type==='framework'));
+  const qs=byDue(items.filter(p=>(SYNCED[p.id]||{}).type!=='framework'));
+  const F=$("#sdFramework"),Q=$("#sdQuestions");
+  if(F)F.innerHTML=fw.length?fw.map(sdCardHTML).join(''):`<div class="empty">Framework cards appear after the catalog syncs.</div>`;
+  if(Q)Q.innerHTML=qs.length?qs.map(sdCardHTML).join(''):`<div class="empty">Question cards appear after the catalog syncs.</div>`;
+}
+function revealSD(id){const b=document.getElementById('sdb-'+cssId(id)),btn=document.getElementById('sdr-'+cssId(id));if(!b)return;b.classList.toggle('hide');if(btn)btn.textContent=b.classList.contains('hide')?'Reveal R·C·A·H·D':'Hide answer';}
+function rateSD(id,got){const pr=S.prog[id];if(!pr)return;const t=todayISO();if(got){pr.box=Math.min((pr.box||1)+1,5);S.xp+=8;}else{pr.box=1;S.xp+=2;}pr.lastResult=got?'pass':'fail';pr.attempts=(pr.attempts||0)+1;pr.due=addDaysISO(t,INTERVALS[pr.box-1]);touchStreak();S.lastSession=t;save();render();toast(got?`✓ +8 XP · next review in ${INTERVALS[pr.box-1]}d`:'Marked rusty — back tomorrow to walk it again');}
+
 function renderTopics(){
   const rows=[...TOPICS];
-  new Set(Object.keys(S.prog).filter(id=>!P_BY_ID[id]).map(id=>getProblem(id).topic)).forEach(t=>{if(!rows.includes(t))rows.push(t);});
-  $("#topicList").innerHTML=rows.map(t=>{const ps=allProblemsWithProg().filter(p=>p.topic===t);if(!ps.length)return'';
+  new Set(Object.keys(S.prog).filter(id=>!P_BY_ID[id]&&!isSD(id)).map(id=>getProblem(id).topic)).forEach(t=>{if(!rows.includes(t))rows.push(t);});
+  $("#topicList").innerHTML=rows.map(t=>{const ps=allProblemsWithProg().filter(p=>p.topic===t&&!isSD(p.id));if(!ps.length)return'';
     const strength=ps.reduce((s,p)=>s+((S.prog[p.id]?.box)||0),0);const pct=Math.round(strength/(5*ps.length)*100);const done=ps.filter(p=>(S.prog[p.id]?.box||0)>=4).length;
     return `<div class="topic"><div class="th"><b>${esc(t)}</b><span>${done}/${ps.length} strong · ${pct}%</span></div><div class="bar"><i style="width:${pct}%"></i></div></div>`;}).join("");
 }
@@ -323,7 +384,7 @@ function renderWeak(){
   const top=Object.entries(byTopic).sort((a,b)=>b[1]-a[1])[0];
   const tags=Object.entries(byTag).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span class="pill">${k} · ${v}</span>`).join("");
   $("#weakSummary").innerHTML=fails.length===0?`<b>No misses logged yet.</b><p class="muted">Logged misses cluster here so you see the pattern behind your mistakes.</p>`:`<b style="font-size:16px">Rustiest area: ${top?esc(top[0]):'—'}</b><p class="muted">${fails.length} miss${fails.length>1?'es':''} logged. Common failure modes:</p>${tags||'<span class="muted">no tags</span>'}`;
-  const weak=allProblemsWithProg().filter(p=>S.prog[p.id]?.lastResult==='fail');
+  const weak=allProblemsWithProg().filter(p=>S.prog[p.id]?.lastResult==='fail'&&!isSD(p.id));
   $("#weakList").innerHTML=weak.length?weak.map(p=>{const last=[...S.log].reverse().find(l=>l.id===p.id);return `<div class="prob"><span class="badge b-weak">Retry</span><div class="main"><div class="title">${esc(p.title)}</div><div class="meta"><span>${esc(p.topic)}</span>${last?.note?`<span>· ${esc(last.note)}</span>`:''}</div></div><div class="actions"><a class="solve" href="https://leetcode.com/problems/${p.slug}/" target="_blank">Solve ↗</a><button class="pass" onclick="openModal('${p.id}')">Log</button></div></div>`;}).join(""):`<div class="empty">Nothing marked for retry.</div>`;
 }
 function renderLog(){if(!S.log.length){$("#logList").innerHTML=`<div class="empty">No entries yet.</div>`;return;}
@@ -353,7 +414,7 @@ function submitLog(){if(!curVerdict){toast("Pick Solved or Missed first");return
 
 /* ---------- swipe review ---------- */
 let rvQueue=[],rvIdx=0,drag=null;
-function startReview(){const t=todayISO();let q=allProblemsWithProg().filter(p=>{const pr=S.prog[p.id];return pr&&pr.due&&pr.due<=t;});if(!q.length)q=allProblemsWithProg().filter(p=>S.prog[p.id]);if(!q.length){toast("No cards yet — solve one first");return;}rvQueue=q.map(p=>p.id);rvIdx=0;$("#review").classList.add("show");showCard();}
+function startReview(){const t=todayISO();let q=allProblemsWithProg().filter(p=>{const pr=S.prog[p.id];return pr&&pr.due&&pr.due<=t&&!isSD(p.id);});if(!q.length)q=allProblemsWithProg().filter(p=>S.prog[p.id]&&!isSD(p.id));if(!q.length){toast("No cards yet — solve one first");return;}rvQueue=q.map(p=>p.id);rvIdx=0;$("#review").classList.add("show");showCard();}
 function endReview(){$("#review").classList.remove("show");render();}
 function showCard(){
   if(rvIdx>=rvQueue.length){$("#swipe").innerHTML=`<div class="face r-Standard" style="align-items:center;justify-content:center;text-align:center;position:static;height:100%"><div><div style="font-size:40px">🎉</div><b>Review complete</b><p class="muted">${rvQueue.length} card${rvQueue.length>1?'s':''} reviewed</p></div></div>`;$("#rvHint").textContent="";$("#rvBar").style.width="100%";$("#rvCount").textContent=`${rvQueue.length}/${rvQueue.length}`;setTimeout(endReview,1400);return;}
@@ -378,7 +439,7 @@ function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileRe
 function resetAll(){if(confirm("Erase all progress, XP, streak and logs? (cards will re-sync from GitHub)")){S=defState();save();render();loadCatalog(false);toast("Reset");}}
 
 /* ---------- tabs / toast ---------- */
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');['today','cards','topics','weak','log','settings'].forEach(t=>$('#tab-'+t).classList.add('hide'));$('#tab-'+b.dataset.tab).classList.remove('hide');});
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');['today','cards','sd','topics','weak','log','settings'].forEach(t=>$('#tab-'+t).classList.add('hide'));$('#tab-'+b.dataset.tab).classList.remove('hide');});
 let toastT;function toast(m){const el=$("#toast");el.textContent=m;el.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("show"),2800);}
 
 render();
