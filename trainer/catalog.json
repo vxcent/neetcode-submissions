@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-06T17:31:23+00:00",
+  "generated": "2026-07-06T18:16:14+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 31,
+  "count": 32,
   "cards": [
     {
       "id": "building-h2o",
@@ -16,6 +16,21 @@
         "time": "O(n)",
         "space": "O(1)",
         "insight": "Semaphores cap the cohort (2 H, 1 O); Barrier(3) makes them rendezvous, so each group is exactly one 2H+1O molecule. Release AFTER the barrier."
+      }
+    },
+    {
+      "id": "design-bounded-blocking-queue",
+      "title": "Design Bounded Blocking Queue",
+      "topic": "Concurrency",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Concurrency/design-bounded-blocking-queue/submission-0.py",
+      "code": "from collections import deque\nfrom threading import Semaphore, Lock\n\n\nclass BoundedBlockingQueue(object):\n\n    def __init__(self, capacity: int):\n        self.empty_spots = Semaphore(capacity)\n        self.queue = deque()\n        self.filled_spots = Semaphore(0)\n        self.lock = Lock()\n\n    def enqueue(self, element: int) -> None:\n        self.empty_spots.acquire()\n        with self.lock:\n            self.queue.append(element)\n        self.filled_spots.release()\n\n    def dequeue(self) -> int:\n        self.filled_spots.acquire()\n        with self.lock:\n            value = self.queue.popleft()\n        self.empty_spots.release()\n        return value\n\n    def size(self) -> int:\n        with self.lock:\n            return len(self.queue)\n",
+      "enriched": {
+        "ds": "2 semaphores + lock",
+        "time": "O(1)",
+        "space": "O(capacity)",
+        "insight": "Producer/consumer: empty-slots & filled-slots semaphores gate capacity/availability; a Lock guards the deque. Acquire the semaphore OUTSIDE the lock so you never block while holding it."
       }
     },
     {
