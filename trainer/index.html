@@ -112,6 +112,55 @@
   .rcahd{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
   .rcahd span{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:11px;color:var(--muted);font-weight:600}
   .rcahd b{color:var(--gold)}
+  /* flat problem card (grid) — tap to zoom */
+  .pcard{position:relative;border-width:2px;border-style:solid;border-radius:16px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:7px;transition:transform .12s}
+  .pcard:active{transform:scale(.98)}
+  .pcard .top{display:flex;align-items:center;gap:8px}
+  .pcard .rar{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;padding:3px 7px;border-radius:6px;background:rgba(0,0,0,.35);margin-right:auto}
+  .pcard .name{font-weight:800;font-size:16px;line-height:1.2}
+  .pcard .patt{font-size:12.5px;opacity:.9}
+  .pcard .cta{margin-top:2px;font-size:11px;font-weight:700;color:var(--blue)}
+  .pc-topic{font-size:11px;color:var(--muted)}
+  /* zoom / detail overlay */
+  .czbg{position:fixed;inset:0;background:rgba(6,7,12,.72);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;z-index:80;overflow-y:auto;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s}
+  .czbg.show{opacity:1;visibility:visible;pointer-events:auto}
+  .czcard{width:100%;max-width:720px;margin:auto;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;transform:translateY(26px) scale(.92);opacity:0;transform-origin:center top;transition:transform .34s cubic-bezier(.2,.8,.2,1),opacity .34s}
+  .czbg.show .czcard{transform:none;opacity:1}
+  .czhead{display:flex;align-items:flex-start;gap:12px}
+  .cztitle{font-size:20px;font-weight:800;line-height:1.2;margin-right:auto}
+  .czclose{background:var(--card2);border:1px solid var(--line);color:var(--text);width:34px;height:34px;border-radius:10px;font-size:16px;cursor:pointer;flex:none}
+  .czmeta{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+  .cztag{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600}
+  .cztag b{color:var(--muted);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-right:5px}
+  .cztldr{background:linear-gradient(160deg,rgba(28,176,246,.13),rgba(28,176,246,.03));border:1px solid rgba(28,176,246,.3);border-radius:12px;padding:14px 16px;margin:4px 0 14px}
+  .cztldr .lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--blue);margin-bottom:6px}
+  .cztldr .txt{font-size:15px;line-height:1.5}
+  .czprog{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
+  .czstep{flex:1;min-width:92px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--bg);opacity:.45;transition:opacity .2s}
+  .czstep.done{opacity:1;border-color:#3f7a2e}
+  .czstep.cur{opacity:1;border-color:var(--gold);background:rgba(255,200,0,.08)}
+  .czstep .k{font-weight:800;font-size:13px}.czstep .k .chk{color:var(--green)}
+  .czstep .s{font-size:10.5px;color:var(--muted)}
+  .czcode-lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 6px}
+  .czcode{background:#0b0d13;border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:58vh}
+  .czcode pre{margin:0;padding:16px;font-size:14px;line-height:1.55;white-space:pre;color:#e7e9f1}
+  /* mobile — iPhone Pro Max and down */
+  @media (max-width:560px){
+    .wrap{padding:14px 11px 84px}
+    header{gap:9px;padding:11px 13px}
+    .brand{font-size:16px;flex-basis:100%;margin-right:0}
+    .stat{font-size:14px}.lvlbar{width:88px}
+    nav{gap:5px}nav button{padding:8px 11px;font-size:12px}
+    .grid{grid-template-columns:1fr;gap:11px}
+    h2{margin:20px 0 10px}
+    .card{padding:14px}
+    .prob{flex-wrap:wrap}.prob .actions{width:100%;justify-content:flex-end}
+    .czbg{padding:12px 8px}
+    .czcard{padding:16px;border-radius:14px}
+    .cztitle{font-size:18px}
+    .cztldr .txt{font-size:14px}
+    .czcode pre{font-size:12.5px;padding:13px}
+  }
 </style>
 </head>
 <body>
@@ -230,6 +279,8 @@
   <div class="rvbtns"><button class="rusty" onclick="rate(false)">😵</button><button class="got" onclick="rate(true)">✅</button></div>
 </div>
 
+<div class="czbg" id="cardZoom" onclick="closeZoom()"></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -327,21 +378,42 @@ function renderCards(){
   const due=items.filter(p=>{const pr=S.prog[p.id];return pr.due&&pr.due<=todayISO();}).length;
   $("#reviewBtn").textContent=due?`Swipe review (${due} due)`:"Swipe review";
   $("#cardsBlurb").textContent=items.length?`${items.length} card${items.length>1?'s':''} collected · ${due} due for review.`:"Solve a problem on NeetCode — the card syncs here automatically.";
-  $("#cardGrid").innerHTML=items.length?items.map(cardHTML).join(""):`<div class="empty" style="grid-column:1/-1">No cards yet. Solve on NeetCode, or hit Settings → Reload now.</div>`;
+  $("#cardGrid").innerHTML=items.length?items.map(pcardHTML).join(""):`<div class="empty" style="grid-column:1/-1">No cards yet. Solve on NeetCode, or hit Settings → Reload now.</div>`;
 }
-function cardHTML(p){const pr=S.prog[p.id],d=cardData(p.id),rar=rarity(p.diff);
+function pcardHTML(p){const pr=S.prog[p.id],d=cardData(p.id),rar=rarity(p.diff);
   const strong='<span class="strengthmini">'+[1,2,3,4,5].map(i=>`<i class="${i<=pr.box?'on':''}"></i>`).join('')+'</span>';
-  return `<div class="bcard" id="bc-${cssId(p.id)}" onclick="flipCard('${p.id}')"><div class="inner">
-    <div class="face r-${rar}"><span class="rar">${rar}${pr.synced?' · synced':''}</span>
-      <div class="name">${esc(p.title)}</div>
-      <div class="patt">${d.ds?(d.auto?'🤖 ':'🧩 ')+esc(d.ds):'<span class="muted">awaiting pattern…</span>'}</div>
-      <div class="cxrow"><div class="cx"><b>Time</b>${esc(d.time||'—')}</div><div class="cx"><b>Space</b>${esc(d.space||'—')}</div></div>
-      <div class="topic">${esc(p.topic)} · <span class="diff d-${p.diff}">${p.diff}</span></div>${strong}</div>
-    <div class="face back"><div class="lbl">Key insight</div><div style="font-size:12.5px">${d.insight?esc(d.insight):'<span class="muted">—</span>'}</div>
-      <div class="lbl">Your code ${d.ext?'· '+d.ext:''}</div><pre>${d.code?esc(d.code):'no code synced'}</pre></div>
-  </div></div>`;}
+  return `<div class="pcard r-${rar}" onclick="openZoom('${p.id}')">
+    <div class="top"><span class="rar">${rar}${pr.synced?' · synced':''}</span>${strong}</div>
+    <div class="name">${esc(p.title)}</div>
+    <div class="patt">${d.ds?(d.auto?'🤖 ':'🧩 ')+esc(d.ds):'<span class="muted">awaiting pattern…</span>'}</div>
+    <div class="cxrow"><div class="cx"><b>Time</b>${esc(d.time||'—')}</div><div class="cx"><b>Space</b>${esc(d.space||'—')}</div></div>
+    <div class="pc-topic">${esc(p.topic)} · <span class="diff d-${p.diff}">${p.diff}</span></div>
+    <div class="cta">Tap to view solution ⤢</div>
+  </div>`;}
 function cssId(id){return id.replace(/[^a-z0-9]/gi,'_');}
-function flipCard(id){document.getElementById('bc-'+cssId(id)).classList.toggle('flipped');}
+
+/* ---------- zoom / detail overlay: big readable code + TL;DR + progression ---------- */
+const CONC_STEPS=[{k:'Event',s:'alternation'},{k:'Semaphore',s:'counted baton'},{k:'Barrier',s:'rendezvous'},{k:'Condition',s:'wait-for-predicate'}];
+function primOf(ds){if(!ds)return null;ds=ds.toLowerCase();let found=null;for(const st of CONC_STEPS){if(ds.includes(st.k.toLowerCase()))found=st.k;}return found;/* highest-index match = the card's headline primitive (e.g. Barrier in "Barrier + Semaphores") */}
+function concUnlocked(){const set=new Set();allProblemsWithProg().forEach(p=>{if(S.prog[p.id]&&getProblem(p.id).topic==='Concurrency'){const k=primOf(cardData(p.id).ds);if(k)set.add(k);}});return set;}
+function progHTML(curKey){const un=concUnlocked();return `<div class="czprog">`+CONC_STEPS.map(st=>{const cur=st.k===curKey,done=un.has(st.k)&&!cur;return `<div class="czstep ${cur?'cur':done?'done':''}"><div class="k">${done?'<span class="chk">✓</span> ':''}${st.k}</div><div class="s">${st.s}</div></div>`;}).join('')+`</div>`;}
+function openZoom(id){const p=getProblem(id),pr=S.prog[id]||{},d=cardData(id);
+  const isConc=p.topic==='Concurrency',curKey=isConc?primOf(d.ds):null;
+  const tldr=d.insight?esc(d.insight):'No takeaway yet — it fills in automatically once the card is enriched.';
+  const meta=`<div class="czmeta">${d.ds?`<span class="cztag"><b>Pattern</b>${esc(d.ds)}</span>`:''}<span class="cztag"><b>Time</b>${esc(d.time||'—')}</span><span class="cztag"><b>Space</b>${esc(d.space||'—')}</span><span class="cztag"><b>Box</b>${pr.box||0}/5</span></div>`;
+  const html=`<div class="czcard" onclick="event.stopPropagation()">
+     <div class="czhead"><div class="cztitle">${esc(p.title)}</div><button class="czclose" onclick="closeZoom()">✕</button></div>
+     <div class="pc-topic">${esc(p.topic)} · <span class="diff d-${p.diff}">${p.diff}</span></div>
+     ${meta}
+     <div class="cztldr"><div class="lbl">🎓 What this teaches</div><div class="txt">${tldr}</div></div>
+     ${isConc?progHTML(curKey):''}
+     <div class="czcode-lbl">Your solution ${d.ext?'· '+esc(d.ext):''}</div>
+     <div class="czcode"><pre>${d.code?esc(d.code):'no code synced'}</pre></div>
+   </div>`;
+  const bg=$("#cardZoom");bg.innerHTML=html;document.body.style.overflow='hidden';
+  requestAnimationFrame(()=>bg.classList.add('show'));
+}
+function closeZoom(){const bg=$("#cardZoom");bg.classList.remove('show');document.body.style.overflow='';setTimeout(()=>{if(!bg.classList.contains('show'))bg.innerHTML='';},360);}
 
 /* ---------- system design deck (same SRS engine) ---------- */
 function sdList(){return allProblemsWithProg().filter(p=>isSD(p.id)&&S.prog[p.id]);}
@@ -441,6 +513,7 @@ function resetAll(){if(confirm("Erase all progress, XP, streak and logs? (cards 
 /* ---------- tabs / toast ---------- */
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');['today','cards','sd','topics','weak','log','settings'].forEach(t=>$('#tab-'+t).classList.add('hide'));$('#tab-'+b.dataset.tab).classList.remove('hide');});
 let toastT;function toast(m){const el=$("#toast");el.textContent=m;el.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("show"),2800);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeZoom();}});
 
 render();
 loadCatalog(false);
