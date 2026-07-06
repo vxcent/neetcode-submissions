@@ -1,8 +1,23 @@
 {
-  "generated": "2026-07-06T06:53:02+00:00",
+  "generated": "2026-07-06T17:31:23+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 30,
+  "count": 31,
   "cards": [
+    {
+      "id": "building-h2o",
+      "title": "Building H2O",
+      "topic": "Concurrency",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Concurrency/building-h2o/submission-0.py",
+      "code": "from threading import Semaphore\nfrom threading import Barrier\n\nclass H2O:\n    def __init__(self):\n        self.h_turn = Semaphore(2)\n        self.oxygen_turn = Semaphore(1)\n        self.water_barrier = Barrier(3)\n\n    def hydrogen(self, releaseHydrogen: 'Callable[[], None]') -> None:\n        self.h_turn.acquire()\n        # releaseHydrogen() outputs \"H\". Do not change or remove this line.\n        self.water_barrier.wait()\n        releaseHydrogen()\n        self.h_turn.release()\n\n    def oxygen(self, releaseOxygen: 'Callable[[], None]') -> None:\n        # releaseOxygen() outputs \"O\". Do not change or remove this line.\n        self.oxygen_turn.acquire()\n        self.water_barrier.wait()\n        releaseOxygen()\n        self.oxygen_turn.release()\n",
+      "enriched": {
+        "ds": "Barrier + Semaphores",
+        "time": "O(n)",
+        "space": "O(1)",
+        "insight": "Semaphores cap the cohort (2 H, 1 O); Barrier(3) makes them rendezvous, so each group is exactly one 2H+1O molecule. Release AFTER the barrier."
+      }
+    },
     {
       "id": "print-foobar-alternately",
       "title": "Print Foobar Alternately",
