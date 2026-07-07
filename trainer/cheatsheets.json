@@ -1,0 +1,20 @@
+{
+  "_comment": "Per-area decision tables shown at the top of the Topics tab in the trainer. Add a sheet per area of the coding journey; keyed by topic. Static reference content — not part of the card/SRS pipeline.",
+  "sheets": [
+    {
+      "topic": "Concurrency",
+      "title": "Concurrency decision table",
+      "subtitle": "Read the problem's shape, reach for the primitive.",
+      "columns": ["Problem shape", "Primitive"],
+      "rows": [
+        ["A → B → C  (strict ordering)", "Semaphore(0) / Event"],
+        ["Only N in a section at once", "Semaphore(N)"],
+        ["Shared variable must not race", "Lock"],
+        ["Wait until N threads all arrive", "Barrier(N)"],
+        ["Queue empty/full blocking (producer/consumer)", "Semaphore ×2 + Lock  (or Condition)"],
+        ["Wait until an arbitrary predicate holds", "Condition + wait_for"],
+        ["Multiple locks — avoid deadlock", "Lock ordering / Semaphore(N-1) cap"]
+      ]
+    }
+  ]
+}
