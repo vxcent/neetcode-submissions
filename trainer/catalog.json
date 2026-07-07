@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-07T00:26:40+00:00",
+  "generated": "2026-07-07T03:15:35+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 33,
+  "count": 34,
   "cards": [
     {
       "id": "building-h2o",
@@ -76,6 +76,21 @@
         "time": "O(n)",
         "space": "O(1)",
         "insight": "A 'driver' (zero) hands the baton to odd/even by parity; Semaphore(0)=closed gate, release() opens it for one waiter."
+      }
+    },
+    {
+      "id": "the-dining-philosophers",
+      "title": "The Dining Philosophers",
+      "topic": "Concurrency",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Concurrency/the-dining-philosophers/submission-0.py",
+      "code": "from threading import Semaphore\n\n# 5 forks, each a Semaphore(1) — a fork can be held by one philosopher at a time.\n# Which forks a philosopher needs is fixed by their index (left = i, right = i+1 mod 5).\n# The deadlock (all 5 grab their left fork, then wait forever on the right) is broken\n# by allowed_to_eat: at most 2 philosophers may enter the fork-taking section at once,\n# so a full 5-way circular wait can never form.\nclass DiningPhilosophers:\n    def __init__(self):\n        self.forks = [Semaphore(1) for _ in range(5)]\n        self.allowed_to_eat = Semaphore(2)\n\n    # call the functions directly to execute, for example, eat()\n    # Given a philo, first determine their left and right:\n    #   0 -> 0,1   1 -> 1,2   2 -> 2,3   3 -> 3,4   4 -> 4,0\n    def wantsToEat(self,\n                   philosopher: int,\n                   pickLeftFork: 'Callable[[], None]',\n                   pickRightFork: 'Callable[[], None]',\n                   eat: 'Callable[[], None]',\n                   putLeftFork: 'Callable[[], None]',\n                   putRightFork: 'Callable[[], None]') -> None:\n        left_fork, right_fork = self.getLeftandRightForks(philosopher)\n        self.allowed_to_eat.acquire()\n        self.forks[left_fork].acquire()\n        self.forks[right_fork].acquire()\n        pickLeftFork()\n        pickRightFork()\n        eat()\n        putLeftFork()\n        putRightFork()\n        self.forks[left_fork].release()\n        self.forks[right_fork].release()\n        self.allowed_to_eat.release()\n\n    # Map philosopher id to fork ids, which match the semaphore indices.\n    def getLeftandRightForks(self, philosopher):\n        left_fork = philosopher\n        right_fork = (philosopher + 1) % 5\n        return left_fork, right_fork\n",
+      "enriched": {
+        "ds": "Semaphores + diner cap",
+        "time": "O(1)",
+        "space": "O(1)",
+        "insight": "Forks are Semaphore(1) locks; grabbing left-then-right invites a 5-way circular-wait deadlock. An extra Semaphore(2) caps how many enter the fork section, so a full cycle can never form."
       }
     },
     {
