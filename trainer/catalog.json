@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-06T18:16:14+00:00",
+  "generated": "2026-07-07T00:26:40+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 32,
+  "count": 33,
   "cards": [
     {
       "id": "building-h2o",
@@ -31,6 +31,21 @@
         "time": "O(1)",
         "space": "O(capacity)",
         "insight": "Producer/consumer: empty-slots & filled-slots semaphores gate capacity/availability; a Lock guards the deque. Acquire the semaphore OUTSIDE the lock so you never block while holding it."
+      }
+    },
+    {
+      "id": "fizz-buzz-multithreaded",
+      "title": "Fizz Buzz Multithreaded",
+      "topic": "Concurrency",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Concurrency/fizz-buzz-multithreaded/submission-0.py",
+      "code": "from threading import Semaphore\n\n\n# Hierarchy of execution:\n#   test fizzbuzz (%15) first, then buzz (%5), then fizz (%3), else the number.\n# `number` is the single dispatcher: it walks 1..n and, per value, releases\n# exactly ONE worker's semaphore then blocks on `done_turn` until it finishes.\n# No Barrier needed because only one worker executes per number.\nclass FizzBuzz:\n    def __init__(self, n: int):\n        self.n = n\n        self.fizzbuzz_turn = Semaphore(0)\n        self.buzz_turn = Semaphore(0)\n        self.fizz_turn = Semaphore(0)\n        self.done_turn = Semaphore(0)\n\n    # printFizz() outputs \"fizz\"\n    def fizz(self, printFizz: 'Callable[[], None]') -> None:\n        for i in range(3, self.n + 1, 3):\n            if i % 5 != 0:\n                self.fizz_turn.acquire()\n                printFizz()\n                self.done_turn.release()\n\n    # printBuzz() outputs \"buzz\"\n    def buzz(self, printBuzz: 'Callable[[], None]') -> None:\n        for i in range(5, self.n + 1, 5):\n            if i % 3 != 0:\n                self.buzz_turn.acquire()\n                printBuzz()\n                self.done_turn.release()\n\n    # printFizzBuzz() outputs \"fizzbuzz\"\n    def fizzbuzz(self, printFizzBuzz: 'Callable[[], None]') -> None:\n        for i in range(15, self.n + 1, 15):\n            self.fizzbuzz_turn.acquire()\n            printFizzBuzz()\n            self.done_turn.release()\n\n    # printNumber(x) outputs \"x\", where x is an integer.\n    def number(self, printNumber: 'Callable[[int], None]') -> None:\n        for i in range(1, self.n + 1):\n            if i % 15 == 0:\n                self.fizzbuzz_turn.release()\n                self.done_turn.acquire()\n            elif i % 5 == 0:\n                self.buzz_turn.release()\n                self.done_turn.acquire()\n            elif i % 3 == 0:\n                self.fizz_turn.release()\n                self.done_turn.acquire()\n            else:\n                printNumber(i)\n",
+      "enriched": {
+        "ds": "Semaphore (dispatcher)",
+        "time": "O(n)",
+        "space": "O(1)",
+        "insight": "One dispatcher (number) walks 1..n and releases exactly one sleeping worker per value, then blocks on a single shared done semaphore. Works because only one worker is ever in flight; permits stay conserved so nothing deadlocks."
       }
     },
     {
