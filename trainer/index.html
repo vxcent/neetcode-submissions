@@ -144,6 +144,19 @@
   .czcode-lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 6px}
   .czcode{background:#0b0d13;border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:58vh}
   .czcode pre{margin:0;padding:16px;font-size:14px;line-height:1.55;white-space:pre;color:#e7e9f1}
+  /* cheat sheets (decision tables) */
+  .cheatcard{padding:0;overflow:hidden}
+  .cheattoggle{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;background:none;border:none;color:var(--text);padding:15px 16px;font-weight:800;font-size:14px;cursor:pointer;text-align:left}
+  .cheattoggle small{color:var(--muted);font-weight:600;font-size:12px}
+  .cheatwrap{padding:0 16px 16px}
+  .cheatwrap.hide{display:none}
+  .cheatsub{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+  .cheatscroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+  .cheattbl{border-collapse:collapse;width:100%;min-width:340px}
+  .cheattbl th,.cheattbl td{text-align:left;padding:9px 13px;font-size:12.5px;border-bottom:1px solid var(--line);vertical-align:top}
+  .cheattbl th{background:var(--card2);color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-size:10px;font-weight:800}
+  .cheattbl tr:last-child td{border-bottom:none}
+  .cheattbl td.prim{font-weight:700;color:var(--gold);white-space:nowrap}
   /* mobile — iPhone Pro Max and down */
   @media (max-width:560px){
     .wrap{padding:14px 11px 84px}
@@ -160,6 +173,8 @@
     .cztitle{font-size:18px}
     .cztldr .txt{font-size:14px}
     .czcode pre{font-size:12.5px;padding:13px}
+    .cheattbl td.prim{white-space:normal}
+    .cheattbl th,.cheattbl td{padding:8px 10px}
   }
 </style>
 </head>
@@ -213,6 +228,7 @@
   </section>
 
   <section id="tab-topics" class="hide">
+    <div id="cheatSheets"></div>
     <div class="card muted">Roadmap order — unlock top-to-bottom. Bar = average pattern strength (box 1→5). Synced course topics appear below.</div>
     <div id="topicList"></div>
   </section>
@@ -366,7 +382,7 @@ function render(){
   $("#revCount").textContent=revs.length?`(${revs.length})`:"";
   $("#reviews").innerHTML=revs.length?revs.map(p=>probRow(p,"review")).join(""):`<div class="empty">No reviews due — your memory's holding.</div>`;
   $("#news").innerHTML=news.length?news.map(p=>probRow(p,"new")).join(""):`<div class="empty">No new problems queued for your filter.</div>`;
-  renderCards();renderSD();renderTopics();renderWeak();renderLog();
+  renderCards();renderSD();renderCheats();renderTopics();renderWeak();renderLog();
   $("#setNew").value=S.settings.newPerDay;$("#setRev").value=S.settings.revCap;$("#setG75").value=S.settings.g75only?"yes":"no";
 }
 function dots(box){let h='<span class="dots">';for(let i=1;i<=5;i++)h+=`<i class="${i<=box?'on':''}"></i>`;return h+'</span>';}
@@ -443,6 +459,17 @@ function renderSD(){
 function revealSD(id){const b=document.getElementById('sdb-'+cssId(id)),btn=document.getElementById('sdr-'+cssId(id));if(!b)return;b.classList.toggle('hide');if(btn)btn.textContent=b.classList.contains('hide')?'Reveal R·C·A·H·D':'Hide answer';}
 function rateSD(id,got){const pr=S.prog[id];if(!pr)return;const t=todayISO();if(got){pr.box=Math.min((pr.box||1)+1,5);S.xp+=8;}else{pr.box=1;S.xp+=2;}pr.lastResult=got?'pass':'fail';pr.attempts=(pr.attempts||0)+1;pr.due=addDaysISO(t,INTERVALS[pr.box-1]);touchStreak();S.lastSession=t;save();render();toast(got?`✓ +8 XP · next review in ${INTERVALS[pr.box-1]}d`:'Marked rusty — back tomorrow to walk it again');}
 
+/* ---------- cheat sheets (per-area decision tables) ---------- */
+let CHEATS=[];
+async function loadCheats(){try{const r=await fetch('cheatsheets.json?_='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json();CHEATS=j.sheets||[];renderCheats();}catch(e){}}
+function cheatCard(s){const id='cheat-'+cssId(s.topic);
+  const head=`<tr>${(s.columns||[]).map(c=>`<th>${esc(c)}</th>`).join('')}</tr>`;
+  const body=(s.rows||[]).map(r=>`<tr>${r.map((cell,i)=>`<td class="${i===r.length-1?'prim':''}">${esc(cell)}</td>`).join('')}</tr>`).join('');
+  return `<div class="card cheatcard"><button class="cheattoggle" onclick="toggleCheat('${id}')"><span>🧭 ${esc(s.title)} <small>· ${esc(s.topic)} · ${(s.rows||[]).length} rules</small></span><span id="chev-${id}">▾</span></button>
+    <div class="cheatwrap" id="${id}">${s.subtitle?`<div class="cheatsub">${esc(s.subtitle)}</div>`:''}<div class="cheatscroll"><table class="cheattbl"><thead>${head}</thead><tbody>${body}</tbody></table></div></div></div>`;}
+function renderCheats(){const el=$("#cheatSheets");if(!el)return;el.innerHTML=CHEATS.length?`<h2 style="margin:6px 0 12px">🧭 Cheat sheets</h2>`+CHEATS.map(cheatCard).join(''):'';}
+function toggleCheat(id){const el=document.getElementById(id);if(!el)return;el.classList.toggle('hide');const ch=document.getElementById('chev-'+id);if(ch)ch.textContent=el.classList.contains('hide')?'▸':'▾';}
+
 function renderTopics(){
   const rows=[...TOPICS];
   new Set(Object.keys(S.prog).filter(id=>!P_BY_ID[id]&&!isSD(id)).map(id=>getProblem(id).topic)).forEach(t=>{if(!rows.includes(t))rows.push(t);});
@@ -517,6 +544,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeZoom();}});
 
 render();
 loadCatalog(false);
+loadCheats();
 setInterval(()=>loadCatalog(true),20000);           // pinned-tab live refresh
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadCatalog(true);});
 </script>
