@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-08T18:03:10+00:00",
+  "generated": "2026-07-08T18:32:59+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 38,
+  "count": 39,
   "cards": [
     {
       "id": "building-h2o",
@@ -182,6 +182,16 @@
         "space": "O(n)",
         "insight": "Prefix each string with its length and a delimiter to allow unambiguous decoding."
       }
+    },
+    {
+      "id": "three-integer-sum",
+      "title": "Three Integer Sum",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/three-integer-sum/submission-0.py",
+      "code": "class Solution:\n    def threeSum(self, nums: List[int]) -> List[List[int]]:\n        output = set()\n        nums.sort()\n        for i, a in enumerate(nums):\n            if a > 0:\n                break\n            if i > 0 and nums[i] == nums[i-1]:\n                continue\n            l, r = i + 1, len(nums) - 1\n            while l < r:\n                threeSum = nums[i] + nums[l] + nums[r]\n                if threeSum > 0:\n                    r -= 1\n                elif threeSum < 0:\n                    l += 1\n                else:\n                    output.add((a, nums[l], nums[r]))\n                    l += 1\n                    r -= 1\n        return [list(x) for x in output]\n                    ",
+      "enriched": null
     },
     {
       "id": "top-k-elements-in-list",
