@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-08T15:56:43+00:00",
+  "generated": "2026-07-08T16:19:02+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 35,
+  "count": 36,
   "cards": [
     {
       "id": "building-h2o",
@@ -151,6 +151,21 @@
         "time": "O(n + m)",
         "space": "O(1)",
         "insight": "Two strings are anagrams iff their character frequency counts are identical."
+      }
+    },
+    {
+      "id": "top-k-elements-in-list",
+      "title": "Top K Elements In List",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/top-k-elements-in-list/submission-1.py",
+      "code": "from collections import Counter\nclass Solution:\n    def topKFrequent(self, nums: List[int], k: int) -> List[int]:\n        counter = Counter(nums)\n        counter = sorted(counter, key=counter.get, reverse=True)\n        return counter[:k]\n",
+      "enriched": {
+        "ds": "hashmap sort",
+        "time": "O(n log n)",
+        "space": "O(n)",
+        "insight": "Count frequencies with a hashmap, sort keys by frequency descending, then return the first k elements."
       }
     },
     {
