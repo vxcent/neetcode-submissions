@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-08T16:19:02+00:00",
+  "generated": "2026-07-08T16:54:13+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 36,
+  "count": 37,
   "cards": [
     {
       "id": "building-h2o",
@@ -151,6 +151,21 @@
         "time": "O(n + m)",
         "space": "O(1)",
         "insight": "Two strings are anagrams iff their character frequency counts are identical."
+      }
+    },
+    {
+      "id": "string-encode-and-decode",
+      "title": "String Encode And Decode",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/string-encode-and-decode/submission-0.py",
+      "code": "class Solution:\n    def encode(self, strs: List[str]) -> str:\n        output = []\n        for s in strs:\n            output.append(str(len(s)))\n            output.append(\"#\")\n            output.append(s)\n        return \"\".join(output)\n\n    def decode(self, s: str) -> List[str]:\n        output = []\n        i = 0\n        while i < len(s):\n            j = i\n            while s[j] != \"#\":\n                j += 1\n            length = int(s[i:j])\n            i = j + 1\n            j = j + 1 + length\n            word = s[i:j]\n            output.append(word)\n            i = j\n        return output\n",
+      "enriched": {
+        "ds": "string parsing",
+        "time": "O(n)",
+        "space": "O(n)",
+        "insight": "Prefix each string with its length and a delimiter to allow unambiguous decoding."
       }
     },
     {
