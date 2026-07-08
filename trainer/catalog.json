@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-08T16:54:13+00:00",
+  "generated": "2026-07-08T17:56:22+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 37,
+  "count": 38,
   "cards": [
     {
       "id": "building-h2o",
@@ -151,6 +151,21 @@
         "time": "O(n + m)",
         "space": "O(1)",
         "insight": "Two strings are anagrams iff their character frequency counts are identical."
+      }
+    },
+    {
+      "id": "is-palindrome",
+      "title": "Is Palindrome",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/is-palindrome/submission-0.py",
+      "code": "\nclass Solution:\n    def isPalindrome(self, s: str) -> bool:\n        newStr = \"\"\n        for c in s:\n            if c.isalnum():\n                newStr += c.lower()\n        return newStr == newStr[::-1]",
+      "enriched": {
+        "ds": "string",
+        "time": "O(n)",
+        "space": "O(n)",
+        "insight": "Filter to alphanumeric lowercase characters, then check if the resulting string equals its reverse."
       }
     },
     {
