@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-10T21:28:41+00:00",
+  "generated": "2026-07-10T23:16:03+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 43,
+  "count": 44,
   "cards": [
     {
       "id": "building-h2o",
@@ -241,6 +241,21 @@
         "time": "O(n)",
         "space": "O(n)",
         "insight": "Prefix each string with its length and a delimiter to allow unambiguous decoding."
+      }
+    },
+    {
+      "id": "subarray-sum-equals-k",
+      "title": "Subarray Sum Equals K",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/subarray-sum-equals-k/submission-1.py",
+      "code": "class Solution:\n    def subarraySum(self, nums: List[int], k: int) -> int:\n        res, curSum = 0, 0\n        prefixSums = { 0 : 1}\n        for num in nums:\n            curSum += num\n            diff = curSum - k\n            res += prefixSums.get(diff, 0)\n            prefixSums[curSum] = 1 + prefixSums.get(curSum, 0)\n        return res",
+      "enriched": {
+        "ds": "hashmap prefix sum",
+        "time": "O(n)",
+        "space": "O(n)",
+        "insight": "Count previous prefix sums equal to current prefix sum minus k to find valid subarrays ending at each index."
       }
     },
     {
