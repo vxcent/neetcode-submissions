@@ -206,7 +206,12 @@
       "subs": 1,
       "codePath": "Data Structures & Algorithms/three-integer-sum/submission-0.py",
       "code": "class Solution:\n    def threeSum(self, nums: List[int]) -> List[List[int]]:\n        output = set()\n        nums.sort()\n        for i, a in enumerate(nums):\n            if a > 0:\n                break\n            if i > 0 and nums[i] == nums[i-1]:\n                continue\n            l, r = i + 1, len(nums) - 1\n            while l < r:\n                threeSum = nums[i] + nums[l] + nums[r]\n                if threeSum > 0:\n                    r -= 1\n                elif threeSum < 0:\n                    l += 1\n                else:\n                    output.add((a, nums[l], nums[r]))\n                    l += 1\n                    r -= 1\n        return [list(x) for x in output]\n                    ",
-      "enriched": null
+      "enriched": {
+        "ds": "two pointers",
+        "time": "O(n^2)",
+        "space": "O(n)",
+        "insight": "Sort the array, then for each first element use two pointers to find pairs that complete a zero sum, skipping duplicates."
+      }
     },
     {
       "id": "top-k-elements-in-list",
