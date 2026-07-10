@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-10T16:20:28+00:00",
+  "generated": "2026-07-10T21:01:41+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 41,
+  "count": 42,
   "cards": [
     {
       "id": "building-h2o",
@@ -196,6 +196,21 @@
         "time": "O(n)",
         "space": "O(1)",
         "insight": "Skip non-alphanumeric chars from both ends and compare lowercase letters inward."
+      }
+    },
+    {
+      "id": "range-sum-query-immutable",
+      "title": "Range Sum Query Immutable",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/range-sum-query-immutable/submission-1.py",
+      "code": "class NumArray:\n\n    def __init__(self, nums: List[int]):\n        self.nums = nums\n        self.prefixSums = []\n        \n        prefix = 0\n        for num in nums:\n            prefix += num\n            self.prefixSums.append(prefix)\n        \n\n\n    def sumRange(self, left: int, right: int) -> int:\n        rightSum = self.prefixSums[right]\n        leftSum = 0\n        if left > 0:\n            leftSum = self.prefixSums[left - 1]\n        return rightSum - leftSum\n\n# Your NumArray object will be instantiated and called as such:\n# obj = NumArray(nums)\n# param_1 = obj.sumRange(left,right)",
+      "enriched": {
+        "ds": "prefix sum",
+        "time": "O(n) init, O(1) query",
+        "space": "O(n)",
+        "insight": "Precompute cumulative sums so any range sum is a constant-time subtraction of two prefix sums."
       }
     },
     {
