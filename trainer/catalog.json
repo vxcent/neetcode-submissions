@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-10T07:12:57+00:00",
+  "generated": "2026-07-10T16:20:28+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 40,
+  "count": 41,
   "cards": [
     {
       "id": "building-h2o",
@@ -61,6 +61,21 @@
         "time": "O(n)",
         "space": "O(1)",
         "insight": "Two Events as alternating gates; seed exactly one open to pick who starts, then wait-clear-mine / set-theirs each step."
+      }
+    },
+    {
+      "id": "print-in-order",
+      "title": "Print In Order",
+      "topic": "Concurrency",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Concurrency/print-in-order/submission-0.py",
+      "code": "from threading import Event\nclass Foo:\n    def __init__(self):\n        self.done = (Event(), Event())\n\n    def first(self, printFirst: 'Callable[[], None]') -> None:\n        # printFirst() outputs \"first\". Do not change or remove this line.\n        printFirst()\n        self.done[0].set()\n\n    def second(self, printSecond: 'Callable[[], None]') -> None:\n        self.done[0].wait()\n        # printSecond() outputs \"second\". Do not change or remove this line.\n        printSecond()\n        self.done[1].set()\n\n    def third(self, printThird: 'Callable[[], None]') -> None:\n        self.done[1].wait()\n        # printThird() outputs \"third\". Do not change or remove this line.\n        printThird()\n",
+      "enriched": {
+        "ds": "Event (2 gates)",
+        "time": "O(1)",
+        "space": "O(1)",
+        "insight": "Chain order with two Events: first opens gate 0; second waits gate 0, prints, opens gate 1; third waits gate 1. Each step unlocks the next."
       }
     },
     {
