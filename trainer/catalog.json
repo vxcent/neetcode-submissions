@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-10T21:01:41+00:00",
+  "generated": "2026-07-10T21:28:41+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 42,
+  "count": 43,
   "cards": [
     {
       "id": "building-h2o",
@@ -166,6 +166,21 @@
         "time": "O(n)",
         "space": "O(n)",
         "insight": "Use a hashmap to count occurrences and check if any count exceeds one."
+      }
+    },
+    {
+      "id": "find-pivot-index",
+      "title": "Find Pivot Index",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/find-pivot-index/submission-2.py",
+      "code": "# use prefix to solve and use the index as the liminer to go through the list via a for loop\nclass Solution:\n    def pivotIndex(self, nums: List[int]) -> int:\n        self.prefixSums = []\n        prefix = 0\n        for num in nums:\n            prefix += num\n            self.prefixSums.append(prefix)\n        leftSum = 0\n        rightSum = 0\n        for i, _ in enumerate(nums):\n            leftSum = 0 if i == 0 else self.prefixSums[i - 1]\n            rightSum = 0 if i == len(nums) - 1 else self.prefixSums[-1] - self.prefixSums[i]\n            if leftSum == rightSum:\n                return i\n        return -1\n",
+      "enriched": {
+        "ds": "prefix sum",
+        "time": "O(n)",
+        "space": "O(n)",
+        "insight": "Use prefix sums to compare left and right subarray sums in constant time at each index."
       }
     },
     {
