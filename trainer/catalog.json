@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-08T18:32:59+00:00",
+  "generated": "2026-07-10T07:12:57+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 39,
+  "count": 40,
   "cards": [
     {
       "id": "building-h2o",
@@ -91,6 +91,21 @@
         "time": "O(1)",
         "space": "O(1)",
         "insight": "Forks are Semaphore(1) locks; grabbing left-then-right invites a 5-way circular-wait deadlock. An extra Semaphore(2) caps how many enter the fork section, so a full cycle can never form."
+      }
+    },
+    {
+      "id": "web-crawler-multithreaded",
+      "title": "Web Crawler Multithreaded",
+      "topic": "Concurrency",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Concurrency/web-crawler-multithreaded/submission-0.py",
+      "code": "from typing import List\nfrom concurrent.futures import ThreadPoolExecutor\n\nclass Solution:\n    def crawl(self, startUrl: str, htmlParser: 'HtmlParser') -> List[str]:\n        hostname = self.getHost(startUrl)\n        visited = {startUrl}\n\n        with ThreadPoolExecutor(max_workers=10) as executor:\n            q = [startUrl]\n\n            while q:\n                next_level = []\n\n                for urls in executor.map(htmlParser.getUrls, q):\n                    for url in urls:\n                        if self.getHost(url) == hostname and url not in visited:\n                            visited.add(url)\n                            next_level.append(url)\n\n                q = next_level\n\n        return list(visited)\n\n    def getHost(self, url: str) -> str:\n        return url.replace(\"http://\", \"\").split(\"/\")[0]\n",
+      "enriched": {
+        "ds": "Thread pool + BFS",
+        "time": "O(V + E)",
+        "space": "O(V)",
+        "insight": "Fan out the slow getUrls calls over a thread pool, but consume executor.map results in the main thread so visited/frontier are mutated single-threaded — parallel I/O, zero shared-state races, no lock needed."
       }
     },
     {
