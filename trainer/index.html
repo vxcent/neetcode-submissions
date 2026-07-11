@@ -173,6 +173,9 @@
   .callegend .calcell{width:12px;height:12px}
   .calstat{display:flex;gap:20px;flex-wrap:wrap}
   .calstat b{font-size:20px}.calstat .l{font-size:12px;color:var(--muted)}
+  .caltip{position:fixed;left:0;top:0;z-index:90;background:var(--card2);border:1px solid var(--line);color:var(--text);font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.45);opacity:0;transition:opacity .1s;white-space:nowrap}
+  .caltip.show{opacity:1}.caltip b{color:var(--green)}
+  .calcell{cursor:pointer}
   /* mobile — iPhone Pro Max and down */
   @media (max-width:560px){
     .wrap{padding:14px 11px 84px}
@@ -323,6 +326,8 @@
 </div>
 
 <div class="czbg" id="cardZoom" onclick="closeZoom()"></div>
+
+<div class="caltip" id="calTip"></div>
 
 <div class="toast" id="toast"></div>
 
@@ -514,13 +519,31 @@ function renderCalendar(){
   const weeks=[];for(let i=0;i<days.length;i+=7)weeks.push(days.slice(i,i+7));
   let prevM=-1;
   const monthRow=weeks.map(w=>{const m=w[0].getMonth();let lbl='';if(m!==prevM){lbl=MON[m];prevM=m;}return `<span class="calm">${lbl}</span>`;}).join('');
-  const cols=weeks.map(w=>`<div class="calweek">`+w.map(d=>{const k=localISO(d);if(d>end)return `<i class="calcell" style="visibility:hidden"></i>`;const n=counts[k]||0;return `<i class="calcell${n?' l'+calLevel(n):''}" title="${k} · ${n} solved"></i>`;}).join('')+`</div>`).join('');
+  const cols=weeks.map(w=>`<div class="calweek">`+w.map(d=>{const k=localISO(d);if(d>end)return `<i class="calcell" style="visibility:hidden"></i>`;const n=counts[k]||0;return `<i class="calcell${n?' l'+calLevel(n):''}" data-d="${k}" data-n="${n}"></i>`;}).join('')+`</div>`).join('');
   wrap.innerHTML=`<div class="calgrid"><div class="calmonths">${monthRow}</div><div class="calbody"><div class="caldays"><i></i><i>Mon</i><i></i><i>Wed</i><i></i><i>Fri</i><i></i></div><div class="calcols">${cols}</div></div></div>`;
   wrap.scrollLeft=wrap.scrollWidth;
+  attachCalTip();
   const total=activeKeys.reduce((s,k)=>s+counts[k],0);
   let longest=0,cur=0;days.forEach(d=>{if(counts[localISO(d)]){cur++;longest=Math.max(longest,cur);}else cur=0;});
   let streak=0;{let d=new Date(end);while(counts[localISO(d)]){streak++;d.setDate(d.getDate()-1);}}
   const el=$("#calSummary");if(el)el.innerHTML=`<div><b>${activeKeys.length}</b><div class="l">active days</div></div><div><b>${total}</b><div class="l">problems solved</div></div><div><b>${streak} 🔥</b><div class="l">current streak</div></div><div><b>${longest}</b><div class="l">longest streak</div></div>`;
+}
+
+function calShowTip(cell){const tip=$("#calTip");if(!tip)return;const d=cell.dataset.d,n=+cell.dataset.n;
+  const dt=new Date(d+"T00:00:00");const ds=dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+  tip.innerHTML=`<b>${n||'No'}</b> problem${n===1?'':'s'} · ${esc(ds)}`;tip.classList.add('show');
+  const r=cell.getBoundingClientRect(),tr=tip.getBoundingClientRect();
+  let top=r.top-tr.height-8;if(top<6)top=r.bottom+8;
+  let left=r.left+r.width/2-tr.width/2;left=Math.max(6,Math.min(left,window.innerWidth-tr.width-6));
+  tip.style.left=left+'px';tip.style.top=top+'px';}
+function calHideTip(){const t=$("#calTip");if(t)t.classList.remove('show');}
+let calTipInit=false;
+function attachCalTip(){
+  const wrap=$("#calWrap");if(!wrap||calTipInit)return;calTipInit=true;
+  wrap.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;const c=e.target.closest('.calcell');(c&&c.dataset.d)?calShowTip(c):calHideTip();});
+  wrap.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')calHideTip();});
+  wrap.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;const c=e.target.closest('.calcell');if(c&&c.dataset.d)calShowTip(c);});
+  document.addEventListener('pointerdown',e=>{if(!e.target.closest('.calcell'))calHideTip();});
 }
 
 /* ---------- cheat sheets (per-area decision tables) ---------- */
