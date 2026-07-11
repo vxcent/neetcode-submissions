@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-10T23:16:03+00:00",
+  "generated": "2026-07-11T00:57:49+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 44,
+  "count": 45,
   "cards": [
     {
       "id": "building-h2o",
@@ -181,6 +181,21 @@
         "time": "O(n)",
         "space": "O(n)",
         "insight": "Use prefix sums to compare left and right subarray sums in constant time at each index."
+      }
+    },
+    {
+      "id": "implement-prefix-tree",
+      "title": "Implement Prefix Tree",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/implement-prefix-tree/submission-0.py",
+      "code": "class TreeNode:\n    def __init__(self):\n        self.children = {}\n        self.word = False\n\n\nclass PrefixTree:\n\n    def __init__(self):\n        self.root = TreeNode()\n\n    def insert(self, word: str) -> None:\n        curr = self.root\n        for char in word:\n            if char not in curr.children:\n                curr.children[char] = TreeNode()\n            curr = curr.children[char]\n        curr.word = True\n\n\n    def search(self, word: str) -> bool:\n        curr = self.root\n        for c in word:\n            if c not in curr.children:\n                return False\n            curr = curr.children[c]\n        return curr.word\n        \n\n    def startsWith(self, prefix: str) -> bool:\n        curr = self.root\n        for c in prefix:\n            if c not in curr.children:\n                return False\n            curr = curr.children[c]\n        return True\n        ",
+      "enriched": {
+        "ds": "trie",
+        "time": "O(m) per operation",
+        "space": "O(n * m)",
+        "insight": "Trie nodes store children in a hashmap and a word-end flag, supporting insert, search, and prefix checks in O(length) time."
       }
     },
     {
