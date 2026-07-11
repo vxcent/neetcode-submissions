@@ -334,8 +334,13 @@ let S=load();
 function load(){try{const r=localStorage.getItem(KEY);return r?Object.assign(defState(),JSON.parse(r)):defState();}catch(e){return defState();}}
 function save(){localStorage.setItem(KEY,JSON.stringify(S));}
 
-function todayISO(){return new Date().toISOString().slice(0,10);}
-function addDaysISO(iso,n){const d=new Date(iso+"T00:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+// Local calendar day (NOT UTC): a personal tracker's "today" must be the user's
+// midnight, and solve dates from git are stored in the committer's local tz. Using
+// toISOString() (UTC) rolled the day over early for behind-UTC users (e.g. an
+// evening Pacific solve dated 07-10 vs a UTC "today" of 07-11 -> "nothing done").
+function localISO(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function todayISO(){return localISO(new Date());}
+function addDaysISO(iso,n){const d=new Date(iso+"T00:00:00");d.setDate(d.getDate()+n);return localISO(d);}
 function dayDiff(a,b){return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/86400000);}
 function touchStreak(){const t=todayISO();if(S.lastActive===t)return;if(S.lastActive&&dayDiff(S.lastActive,t)===1)S.streak+=1;else S.streak=1;S.lastActive=t;}
 
