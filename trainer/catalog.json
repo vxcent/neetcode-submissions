@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-11T04:33:38+00:00",
+  "generated": "2026-07-11T04:46:57+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 50,
+  "count": 51,
   "cards": [
     {
       "id": "building-h2o",
@@ -113,6 +113,22 @@
         "time": "O(1)",
         "space": "O(1)",
         "insight": "Forks are Semaphore(1) locks; grabbing left-then-right invites a 5-way circular-wait deadlock. An extra Semaphore(2) caps how many enter the fork section, so a full cycle can never form."
+      }
+    },
+    {
+      "id": "traffic-light-controlled-intersection",
+      "title": "Traffic Light Controlled Intersection",
+      "topic": "Concurrency",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Concurrency/traffic-light-controlled-intersection/submission-0.py",
+      "code": "from threading import Lock\n\nclass TrafficLight:\n    def __init__(self):\n        self.greenroad = 1        # which road currently has the green light\n        self.lock = Lock()\n\n    def carArrived(\n        self,\n        carId: int,                      # ID of the car\n        roadId: int,                     # road the car travels on: 1 (A) or 2 (B)\n        direction: int,                  # direction of the car\n        turnGreen: 'Callable[[], None]', # turn the light green on the car's road\n        crossCar: 'Callable[[], None]'   # make the car cross\n    ) -> None:\n        # The lock makes \"check the light, switch if needed, cross\" one atomic\n        # step, so only one car crosses at a time and no car crosses on red.\n        with self.lock:\n            if self.greenroad != roadId:\n                turnGreen()               # perform the switch, not just record it\n                self.greenroad = roadId\n            crossCar()\n",
+      "date": null,
+      "enriched": {
+        "ds": "Lock",
+        "time": "O(1)",
+        "space": "O(1)",
+        "insight": "One Lock makes check-light / switch / cross one atomic step so no car crosses on red. Must call turnGreen() to actually switch the light, not just record greenroad."
       }
     },
     {
