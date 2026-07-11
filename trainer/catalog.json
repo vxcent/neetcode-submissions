@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-11T00:57:49+00:00",
+  "generated": "2026-07-11T01:56:01+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 45,
+  "count": 46,
   "cards": [
     {
       "id": "building-h2o",
@@ -152,6 +152,16 @@
         "space": "O(n)",
         "insight": "Ways to reach a step equal sum of ways from the next two steps; memoize each index to avoid recomputing."
       }
+    },
+    {
+      "id": "design-word-search-data-structure",
+      "title": "Design Word Search Data Structure",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/design-word-search-data-structure/submission-0.py",
+      "code": "# Think of . as a match case when constructing the hashmap\nclass TrieNode:\n    def __init__(self):\n        self.children = {}\n        self.word = False\n\nclass WordDictionary:\n\n    def __init__(self):\n        self.root = TrieNode()\n\n    def addWord(self, word: str) -> None:\n        curr = self.root\n        for c in word:\n            if c not in curr.children:\n                curr.children[c] = TrieNode()\n            curr = curr.children[c]\n        curr.word = True\n\n    def search(self, word: str) -> bool:\n\n        def dfs(index, root: TrieNode):\n            curr = root\n            for i in range(index, len(word)):\n                if word[i] == \".\":\n                    for child in curr.children.values():\n                        if dfs(i+1, child):\n                            return True\n                    return False\n                elif word[i] not in curr.children:\n                    return False\n                curr = curr.children[word[i]]\n            return curr.word\n        return dfs(0, self.root)\n                    \n\n",
+      "enriched": null
     },
     {
       "id": "duplicate-integer",
