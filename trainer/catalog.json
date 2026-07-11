@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-11T03:50:22+00:00",
+  "generated": "2026-07-11T04:33:38+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 49,
+  "count": 50,
   "cards": [
     {
       "id": "building-h2o",
@@ -207,6 +207,22 @@
       }
     },
     {
+      "id": "eating-bananas",
+      "title": "Eating Bananas",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/eating-bananas/submission-0.py",
+      "code": "# Need a \"estimateConsumption\" for getting output of h\n# If h is too low, see if we can find a good higher middle ground\n# if h is too high, vice versa\nclass Solution:\n    def minEatingSpeed(self, piles: List[int], h: int) -> int:\n        l = 1\n        r = max(piles)\n        output = r\n\n        while l <= r:\n            k = (l + r) // 2\n\n            timeRequired = self.estimateConsumption(piles, k)\n\n            if timeRequired <= h:\n                output = k\n                r = k - 1\n            else:\n                l = k + 1\n        return output\n\n        \n\n    def estimateConsumption(self, piles, k) -> int:\n        estimate = 0\n        for p in piles:\n            estimate += math.ceil(float(p / k))\n        return estimate",
+      "date": "2026-07-10",
+      "enriched": {
+        "ds": "binary search",
+        "time": "O(n log m)",
+        "space": "O(1)",
+        "insight": "Binary search the minimum eating speed, validating with total hours via ceiling division."
+      }
+    },
+    {
       "id": "find-pivot-index",
       "title": "Find Pivot Index",
       "topic": "Data Structures & Algorithms",
@@ -311,7 +327,12 @@
       "codePath": "Data Structures & Algorithms/search-2d-matrix/submission-1.py",
       "code": "# vertical first, then horizontal\nclass Solution:\n    def searchMatrix(self, matrix: List[List[int]], target: int) -> bool:\n        HEIGHT = len(matrix) - 1\n        LENGTH = len(matrix[0]) - 1\n        row = self.verticalBinarySearch(matrix, target, 0, HEIGHT)\n        if row:\n            return self.horizontalBinarySearch(row, target, 0, LENGTH)\n        else:\n            return False\n    \n    def verticalBinarySearch(self, matrix, target, top, bottom):\n        if top > bottom:\n            return None\n        middleRow= (top + bottom) // 2\n        left = matrix[middleRow][0]\n        right = matrix[middleRow][-1]\n        if target >= left and target <= right:\n            return matrix[middleRow]\n        elif target < left:\n            return self.verticalBinarySearch(matrix, target, top, middleRow - 1)\n        else:\n            return self.verticalBinarySearch(matrix, target, middleRow + 1, bottom)\n        \n\n    def horizontalBinarySearch(self, row, target, left, right):\n        if left > right:\n            return False\n        middle = (left + right) // 2\n        if row[middle] == target:\n            return True\n        elif row[middle] < target:\n            return self.horizontalBinarySearch(row, target, middle + 1, right)\n        else:\n            return self.horizontalBinarySearch(row, target, left, middle - 1)\n        ",
       "date": "2026-07-10",
-      "enriched": null
+      "enriched": {
+        "ds": "binary search",
+        "time": "O(log(m*n))",
+        "space": "O(log(m*n))",
+        "insight": "Binary search the row range first, then binary search within the chosen row."
+      }
     },
     {
       "id": "string-encode-and-decode",
