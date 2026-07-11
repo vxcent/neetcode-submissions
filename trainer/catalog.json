@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-11T03:28:01+00:00",
+  "generated": "2026-07-11T03:50:22+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 48,
+  "count": 49,
   "cards": [
     {
       "id": "building-h2o",
@@ -301,6 +301,17 @@
         "space": "O(n)",
         "insight": "Recursively reverse the tail, then point the next node back to current and sever current's forward link."
       }
+    },
+    {
+      "id": "search-2d-matrix",
+      "title": "Search 2D Matrix",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/search-2d-matrix/submission-1.py",
+      "code": "# vertical first, then horizontal\nclass Solution:\n    def searchMatrix(self, matrix: List[List[int]], target: int) -> bool:\n        HEIGHT = len(matrix) - 1\n        LENGTH = len(matrix[0]) - 1\n        row = self.verticalBinarySearch(matrix, target, 0, HEIGHT)\n        if row:\n            return self.horizontalBinarySearch(row, target, 0, LENGTH)\n        else:\n            return False\n    \n    def verticalBinarySearch(self, matrix, target, top, bottom):\n        if top > bottom:\n            return None\n        middleRow= (top + bottom) // 2\n        left = matrix[middleRow][0]\n        right = matrix[middleRow][-1]\n        if target >= left and target <= right:\n            return matrix[middleRow]\n        elif target < left:\n            return self.verticalBinarySearch(matrix, target, top, middleRow - 1)\n        else:\n            return self.verticalBinarySearch(matrix, target, middleRow + 1, bottom)\n        \n\n    def horizontalBinarySearch(self, row, target, left, right):\n        if left > right:\n            return False\n        middle = (left + right) // 2\n        if row[middle] == target:\n            return True\n        elif row[middle] < target:\n            return self.horizontalBinarySearch(row, target, middle + 1, right)\n        else:\n            return self.horizontalBinarySearch(row, target, left, middle - 1)\n        ",
+      "date": "2026-07-10",
+      "enriched": null
     },
     {
       "id": "string-encode-and-decode",
