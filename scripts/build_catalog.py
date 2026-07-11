@@ -8,7 +8,7 @@ Mechanical only — no network, stdlib only. Enrichment (Big-O / pattern /
 insight) is added separately by scripts/enrich.py. Existing enrichment is
 preserved as long as the latest submission code is unchanged.
 """
-import json, os, re, sys
+import json, os, re, subprocess, sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -85,9 +85,30 @@ def load_system_design():
             "subs": 1,
             "codePath": None,
             "code": "",          # empty -> enrich.py leaves it alone
+            "date": None,
             "enriched": None,
         })
     return cards
+
+
+def commit_date(path: Path):
+    """Author date (YYYY-MM-DD) of the latest commit that touched `path`.
+
+    This is the source of truth for "solved on day X" — for NeetCode sync the
+    commit lands when you submit, and for hand-committed solves it's the commit
+    itself. Resubmissions bump it to the new submission's date. Requires full
+    git history (CI checkout uses fetch-depth: 0); returns None if unavailable
+    (e.g. uncommitted file, shallow clone).
+    """
+    try:
+        out = subprocess.run(
+            ["git", "log", "-1", "--format=%ad", "--date=short", "--", str(path)],
+            cwd=str(ROOT), capture_output=True, text=True, timeout=15,
+        )
+        d = out.stdout.strip()
+        return d or None
+    except Exception:
+        return None
 
 
 def main():
@@ -106,6 +127,7 @@ def main():
             "subs": len(subs),
             "codePath": rel,
             "code": code,
+            "date": commit_date(path),
             "enriched": None,
         }
         # carry over enrichment when the code hasn't changed
