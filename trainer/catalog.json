@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-11T04:50:48+00:00",
+  "generated": "2026-07-11T05:04:13+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 52,
+  "count": 53,
   "cards": [
     {
       "id": "building-h2o",
@@ -161,6 +161,22 @@
         "time": "O(n * m)",
         "space": "O(n * m)",
         "insight": "Use a hashable canonical signature (frozenset of Counter items) as the hashmap key to group anagrams together."
+      }
+    },
+    {
+      "id": "baseball-game",
+      "title": "Baseball Game",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/baseball-game/submission-0.py",
+      "code": "class Solution:\n    def calPoints(self, operations: List[str]) -> int:\n        stack = []\n        output = 0\n        for c in operations:\n            if c  == \"+\" and stack:\n                prev = stack[-1]\n                prev_prev = stack[-2]\n                stack.append(prev + prev_prev)\n            elif c == \"D\":\n                stack.append(2 * stack[-1])\n            elif c == \"C\":\n                stack.pop()\n            else:\n                stack.append(int(c))\n        for i in stack:\n            output += i\n        return output",
+      "date": "2026-07-10",
+      "enriched": {
+        "ds": "stack",
+        "time": "O(n)",
+        "space": "O(n)",
+        "insight": "Use a stack to track valid scores and apply each operation by peeking or popping the top record."
       }
     },
     {
@@ -616,7 +632,12 @@
       "codePath": "Python Coding Interviews/python-min-max-shortcut/submission-0.py",
       "code": "from typing import List\n\n\ndef disallow_negatives(num: int) -> int:\n    return max(0, num)\n\n\ndef max_difference(nums: List[int]) -> int:\n    diff = 0\n    for i in range(len(nums) - 1):\n        diff = max(nums[i + 1] - nums[i], diff)\n    return diff\n\n\n\n\n\n# do not modify below this line\nprint(disallow_negatives(-2))\nprint(disallow_negatives(-1))\nprint(disallow_negatives(0))\nprint(disallow_negatives(1))\nprint(disallow_negatives(2))\n\nprint(max_difference([1, 2, 3, 4, 5, 6, 7, 8, 9]))\nprint(max_difference([1, 2, 3, 4, 5, 6, 8, 9]))\nprint(max_difference([10, 1, 3, 7]))\nprint(max_difference([2, 4, 7, 5, 7, 8, 4, 2]))\n",
       "date": "2026-07-10",
-      "enriched": null
+      "enriched": {
+        "ds": "linear scan",
+        "time": "O(n)",
+        "space": "O(1)",
+        "insight": "Use max(0, x) to floor negatives and track the largest adjacent difference in a single pass."
+      }
     },
     {
       "id": "python-sort-custom",
