@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-11T02:11:57+00:00",
+  "generated": "2026-07-11T03:05:38+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 46,
+  "count": 47,
   "cards": [
     {
       "id": "building-h2o",
@@ -269,6 +269,17 @@
         "space": "O(n)",
         "insight": "Precompute cumulative sums so any range sum is a constant-time subtraction of two prefix sums."
       }
+    },
+    {
+      "id": "reverse-a-linked-list",
+      "title": "Reverse A Linked List",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/reverse-a-linked-list/submission-0.py",
+      "code": "# Definition for singly-linked list.\n# class ListNode:\n#     def __init__(self, val=0, next=None):\n#         self.val = val\n#         self.next = next\n\nclass Solution:\n    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:\n        if not head:\n            return None\n        \n        nextHead = head\n        if head.next:\n            nextHead = self.reverseList(head.next)\n            head.next.next = head\n        head.next = None\n        return nextHead\n",
+      "date": "2026-07-10",
+      "enriched": null
     },
     {
       "id": "string-encode-and-decode",
