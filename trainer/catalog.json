@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-11T03:05:38+00:00",
+  "generated": "2026-07-11T03:28:01+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 47,
+  "count": 48,
   "cards": [
     {
       "id": "building-h2o",
@@ -148,6 +148,22 @@
       }
     },
     {
+      "id": "binary-search",
+      "title": "Binary Search",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/binary-search/submission-0.py",
+      "code": "class Solution:\n    def search(self, nums: List[int], target: int) -> int:\n        return self.binarySearch(nums, 0, len(nums) -1, target)\n        \n    def binarySearch(self, nums, left, right, target):\n        if left > right:\n            return -1\n        \n        middle = (left + right) // 2\n        if nums[middle] == target:\n            return middle\n        elif nums[middle] < target:\n            return self.binarySearch(nums, middle + 1, right, target)\n        else:\n            return self.binarySearch(nums, left, middle -1, target)\n            ",
+      "date": "2026-07-10",
+      "enriched": {
+        "ds": "binary search",
+        "time": "O(log n)",
+        "space": "O(log n)",
+        "insight": "Repeatedly halve the sorted interval to locate the target in logarithmic time."
+      }
+    },
+    {
       "id": "climbing-stairs",
       "title": "Climbing Stairs",
       "topic": "Data Structures & Algorithms",
@@ -279,7 +295,12 @@
       "codePath": "Data Structures & Algorithms/reverse-a-linked-list/submission-0.py",
       "code": "# Definition for singly-linked list.\n# class ListNode:\n#     def __init__(self, val=0, next=None):\n#         self.val = val\n#         self.next = next\n\nclass Solution:\n    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:\n        if not head:\n            return None\n        \n        nextHead = head\n        if head.next:\n            nextHead = self.reverseList(head.next)\n            head.next.next = head\n        head.next = None\n        return nextHead\n",
       "date": "2026-07-10",
-      "enriched": null
+      "enriched": {
+        "ds": "recursion",
+        "time": "O(n)",
+        "space": "O(n)",
+        "insight": "Recursively reverse the tail, then point the next node back to current and sever current's forward link."
+      }
     },
     {
       "id": "string-encode-and-decode",
