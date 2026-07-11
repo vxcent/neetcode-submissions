@@ -356,7 +356,7 @@ async function loadCatalog(silent){
     if(silent&&cat.generated===S.catalogAt)return; // unchanged
     let minted=0;const t=todayISO();
     (cat.cards||[]).forEach(c=>{
-      SYNCED[c.id]={title:c.title,topic:c.topic,ext:c.ext,subs:c.subs,code:c.code,enriched:c.enriched,diff:c.difficulty||c.diff||"—",kind:c.kind,type:c.type,sd:c.sd,front:c.front};
+      SYNCED[c.id]={title:c.title,topic:c.topic,ext:c.ext,subs:c.subs,code:c.code,enriched:c.enriched,diff:c.difficulty||c.diff||"—",kind:c.kind,type:c.type,sd:c.sd,front:c.front,date:c.date};
       if(!S.prog[c.id]&&!P_BY_ID[c.id]){S.prog[c.id]={box:1,due:addDaysISO(t,1),attempts:1,lastResult:'pass',synced:true,firstSeen:t};if(c.kind==='system-design')S.prog[c.id].sdCard=true;minted++;}
       else if(S.prog[c.id]){S.prog[c.id].synced=true;if(c.kind==='system-design')S.prog[c.id].sdCard=true;}
     });
@@ -378,8 +378,9 @@ function render(){
   const lvl=Math.floor(S.xp/100)+1;$("#lvl").textContent=lvl;$("#lvlbar").style.width=(S.xp%100)+"%";
   $("#cardCount").textContent=Object.keys(S.prog).length;
   const revs=reviewsDue(),news=nextNew(),total=revs.length+news.length;
-  let sv=0,rv=0;const stod=todayISO();
-  Object.keys(S.prog).forEach(id=>{const pr=S.prog[id];if(!pr||isSD(id))return;if(pr.firstSeen===stod)sv++;else if(pr.lastDone===stod)rv++;});
+  let sv=0,rv=0;const stod=todayISO();const solvedIds=new Set();
+  Object.keys(SYNCED).forEach(id=>{if(isSD(id))return;if(SYNCED[id].date===stod){sv++;solvedIds.add(id);}});   // solved/resubmitted today, by commit date
+  Object.keys(S.prog).forEach(id=>{if(isSD(id)||solvedIds.has(id))return;if(S.prog[id].lastDone===stod)rv++;});  // reviewed today
   const doneT=sv+rv;const upnext=(revs.length||news.length)?` · up next: ${revs.length} due · ${news.length} queued`:'';
   $("#dailyHead").innerHTML=doneT>0
     ?`<b style="font-size:17px">${doneT} problem${doneT!==1?'s':''} done today 💪</b><p class="muted">${sv} new solve${sv!==1?'s':''}${rv?` · ${rv} review${rv!==1?'s':''}`:''}${upnext}</p>`
