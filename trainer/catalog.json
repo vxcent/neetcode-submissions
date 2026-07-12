@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-12T02:15:19+00:00",
+  "generated": "2026-07-12T02:18:15+00:00",
   "repo": "vxcent/neetcode-submissions",
   "count": 55,
   "cards": [
@@ -296,11 +296,16 @@
       "title": "Invert A Binary Tree",
       "topic": "Data Structures & Algorithms",
       "ext": "py",
-      "subs": 1,
-      "codePath": "Data Structures & Algorithms/invert-a-binary-tree/submission-0.py",
-      "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\n\nclass Solution:\n    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:\n        if root is None:\n            return None\n        original_left = root.left\n        original_right = root.right\n        root.left = self.invertTree(original_right)\n        root.right = self.invertTree(original_left)\n        return root\n        \n    ",
+      "subs": 2,
+      "codePath": "Data Structures & Algorithms/invert-a-binary-tree/submission-1.py",
+      "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\n\nclass Solution:\n    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:\n        if root is None:\n            return None\n        original_left = root.left\n        root.left = root.right\n        root.right = original_left\n        root.left = self.invertTree(root.left)\n        root.right = self.invertTree(root.right)\n        return root\n        \n    ",
       "date": "2026-07-11",
-      "enriched": null
+      "enriched": {
+        "ds": "recursion",
+        "time": "O(n)",
+        "space": "O(h)",
+        "insight": "Swap each node's left and right children, then recursively invert the new left and right subtrees."
+      }
     },
     {
       "id": "is-anagram",
