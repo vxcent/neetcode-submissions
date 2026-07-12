@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-11T05:14:15+00:00",
+  "generated": "2026-07-12T02:15:19+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 54,
+  "count": 55,
   "cards": [
     {
       "id": "building-h2o",
@@ -292,6 +292,17 @@
       }
     },
     {
+      "id": "invert-a-binary-tree",
+      "title": "Invert A Binary Tree",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/invert-a-binary-tree/submission-0.py",
+      "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\n\nclass Solution:\n    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:\n        if root is None:\n            return None\n        original_left = root.left\n        original_right = root.right\n        root.left = self.invertTree(original_right)\n        root.right = self.invertTree(original_left)\n        return root\n        \n    ",
+      "date": "2026-07-11",
+      "enriched": null
+    },
+    {
       "id": "is-anagram",
       "title": "Is Anagram",
       "topic": "Data Structures & Algorithms",
@@ -332,7 +343,12 @@
       "codePath": "Data Structures & Algorithms/minimum-stack/submission-0.py",
       "code": "# sort of a history of min at the time\nclass MinStack:\n\n    def __init__(self):\n        self.stack = []\n        self.minStack = []\n\n    def push(self, val: int) -> None:\n        self.stack.append(val)\n        minAtPush = min(val, self.minStack[-1] if self.minStack else val)\n        self.minStack.append(minAtPush)\n\n    def pop(self) -> None:\n        self.stack.pop()\n        self.minStack.pop()\n\n    def top(self) -> int:\n        return self.stack[-1]\n\n    def getMin(self) -> int:\n        return self.minStack[-1]\n",
       "date": "2026-07-10",
-      "enriched": null
+      "enriched": {
+        "ds": "two stacks",
+        "time": "O(1) per op",
+        "space": "O(n)",
+        "insight": "Keep a parallel min-stack storing the minimum seen so far at each push."
+      }
     },
     {
       "id": "range-sum-query-immutable",
