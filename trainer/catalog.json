@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-12T07:42:58+00:00",
+  "generated": "2026-07-12T21:54:54+00:00",
   "repo": "vxcent/neetcode-submissions",
   "count": 58,
   "cards": [
@@ -387,16 +387,11 @@
       "title": "Partition Equal Subset Sum",
       "topic": "Data Structures & Algorithms",
       "ext": "py",
-      "subs": 1,
-      "codePath": "Data Structures & Algorithms/partition-equal-subset-sum/submission-1.py",
-      "code": "class Solution:\n    def canPartition(self, nums: List[int]) -> bool:\n\n        target = sum(nums)\n        if target % 2 != 0:\n            return False\n        target = target // 2\n        cache = [[-1] * (target + 1) for _ in range(len(nums) + 1)]\n        \n        def dfs(index, target):\n            if target == 0:\n                return True\n            if target < 0 or index >= len(nums):\n                return False\n            if cache[index][target] != -1:\n                return cache[index][target]\n\n            cache[index][target] = dfs(index + 1, target) or dfs(index + 1, target - nums[index])\n            return cache[index][target]\n        return dfs(0, target)\n\n\n",
+      "subs": 2,
+      "codePath": "Data Structures & Algorithms/partition-equal-subset-sum/submission-4.py",
+      "code": "class Solution:\n        \n    def canPartition(self, nums: List[int]) -> bool:\n        # calculate target and send it down dfs\n        target = sum(nums)\n        if target % 2 != 0:\n            return False\n        target //= 2\n        matrix = [[-1] * (target + 1) for _ in range(len(nums) + 1)]\n\n        def dfs(index, target):\n            if index >= len(nums):\n                return False\n            if target < 0:\n                return False\n            if target == 0:\n                return True\n            curr = nums[index]\n            if matrix[index][target] != -1:\n                return matrix[index][target]\n            matrix[index][target] = dfs(index + 1, target) or dfs(index + 1, target - curr)\n            return matrix[index][target]\n        return dfs(0, target)\n    \n    \n        \n        \n        \n        ",
       "date": "2026-07-12",
-      "enriched": {
-        "ds": "memoized subset-sum DP",
-        "time": "O(n * target)",
-        "space": "O(n * target)",
-        "insight": "If total is even, the problem is equivalent to finding a subset that sums to half the total."
-      }
+      "enriched": null
     },
     {
       "id": "range-sum-query-immutable",
