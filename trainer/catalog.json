@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-12T21:54:54+00:00",
+  "generated": "2026-07-12T22:17:48+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 58,
+  "count": 59,
   "cards": [
     {
       "id": "building-h2o",
@@ -204,7 +204,12 @@
       "codePath": "Data Structures & Algorithms/binary-tree-diameter/submission-1.py",
       "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\n\nclass Solution:\n    def diameterOfBinaryTree(self, root: Optional[TreeNode]) -> int:\n        self.diameter = 0\n        self.dfs(root)\n        return self.diameter\n\n    def dfs(self, node):\n        if not node:\n            return 0\n\n        left_diameter = self.dfs(node.left)\n        right_diameter = self.dfs(node.right)\n        curr_diameter = left_diameter + right_diameter\n        self.diameter = max(self.diameter, curr_diameter)\n        return 1 + max(left_diameter, right_diameter)\n        ",
       "date": "2026-07-11",
-      "enriched": null
+      "enriched": {
+        "ds": "DFS recursion",
+        "time": "O(n)",
+        "space": "O(h)",
+        "insight": "Diameter through a node is left height plus right height; track the global max during a post-order DFS."
+      }
     },
     {
       "id": "climbing-stairs",
@@ -319,6 +324,17 @@
       }
     },
     {
+      "id": "insert-into-a-binary-search-tree",
+      "title": "Insert Into A Binary Search Tree",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/insert-into-a-binary-search-tree/submission-0.py",
+      "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    def insertIntoBST(self, root: Optional[TreeNode], val: int) -> Optional[TreeNode]:\n        if not root:\n            return TreeNode(val)\n        \n        if val > root.val:\n            root.right = self.insertIntoBST(root.right, val)\n        if val < root.val:\n            root.left = self.insertIntoBST(root.left, val)\n        return root",
+      "date": "2026-07-12",
+      "enriched": null
+    },
+    {
       "id": "invert-a-binary-tree",
       "title": "Invert A Binary Tree",
       "topic": "Data Structures & Algorithms",
@@ -391,7 +407,12 @@
       "codePath": "Data Structures & Algorithms/partition-equal-subset-sum/submission-4.py",
       "code": "class Solution:\n        \n    def canPartition(self, nums: List[int]) -> bool:\n        # calculate target and send it down dfs\n        target = sum(nums)\n        if target % 2 != 0:\n            return False\n        target //= 2\n        matrix = [[-1] * (target + 1) for _ in range(len(nums) + 1)]\n\n        def dfs(index, target):\n            if index >= len(nums):\n                return False\n            if target < 0:\n                return False\n            if target == 0:\n                return True\n            curr = nums[index]\n            if matrix[index][target] != -1:\n                return matrix[index][target]\n            matrix[index][target] = dfs(index + 1, target) or dfs(index + 1, target - curr)\n            return matrix[index][target]\n        return dfs(0, target)\n    \n    \n        \n        \n        \n        ",
       "date": "2026-07-12",
-      "enriched": null
+      "enriched": {
+        "ds": "top-down DP",
+        "time": "O(n * target)",
+        "space": "O(n * target)",
+        "insight": "Partitioning is possible iff some subset sums to exactly half the total sum."
+      }
     },
     {
       "id": "range-sum-query-immutable",
