@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-12T02:18:15+00:00",
+  "generated": "2026-07-12T02:27:00+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 55,
+  "count": 56,
   "cards": [
     {
       "id": "building-h2o",
@@ -209,6 +209,22 @@
         "time": "O(n)",
         "space": "O(n)",
         "insight": "Ways to reach a step equal sum of ways from the next two steps; memoize each index to avoid recomputing."
+      }
+    },
+    {
+      "id": "depth-of-binary-tree",
+      "title": "Depth Of Binary Tree",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/depth-of-binary-tree/submission-0.py",
+      "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\n\nclass Solution:\n    def maxDepth(self, root: Optional[TreeNode]) -> int:\n        if not root:\n            return 0\n        else:\n            return self.dfs(root, 1)\n    \n    def dfs(self, node, maxDepth):\n        if node == None:\n            return maxDepth\n        \n        left_depth, right_depth = maxDepth, maxDepth\n        if node.left:\n            left_depth = self.dfs(node.left, left_depth + 1)\n        if node.right:\n            right_depth = self.dfs(node.right, right_depth + 1)\n        return max(left_depth, right_depth)\n        ",
+      "date": "2026-07-11",
+      "enriched": {
+        "ds": "DFS recursion",
+        "time": "O(n)",
+        "space": "O(h)",
+        "insight": "Tree depth equals 1 plus the max depth of its left and right subtrees; recursion handles this naturally."
       }
     },
     {
