@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-12T02:27:00+00:00",
+  "generated": "2026-07-12T02:53:26+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 56,
+  "count": 57,
   "cards": [
     {
       "id": "building-h2o",
@@ -194,6 +194,17 @@
         "space": "O(log n)",
         "insight": "Repeatedly halve the sorted interval to locate the target in logarithmic time."
       }
+    },
+    {
+      "id": "binary-tree-diameter",
+      "title": "Binary Tree Diameter",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/binary-tree-diameter/submission-1.py",
+      "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\n\nclass Solution:\n    def diameterOfBinaryTree(self, root: Optional[TreeNode]) -> int:\n        self.diameter = 0\n        self.dfs(root)\n        return self.diameter\n\n    def dfs(self, node):\n        if not node:\n            return 0\n\n        left_diameter = self.dfs(node.left)\n        right_diameter = self.dfs(node.right)\n        curr_diameter = left_diameter + right_diameter\n        self.diameter = max(self.diameter, curr_diameter)\n        return 1 + max(left_diameter, right_diameter)\n        ",
+      "date": "2026-07-11",
+      "enriched": null
     },
     {
       "id": "climbing-stairs",
