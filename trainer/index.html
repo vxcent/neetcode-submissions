@@ -411,7 +411,7 @@ function nextNew(){return PROBLEMS.filter(p=>!S.prog[p.id]).filter(p=>S.settings
 /* ---------- render ---------- */
 const $=s=>document.querySelector(s);
 function render(){
-  $("#streak").textContent=S.streak;$("#xp").textContent=S.xp;
+  $("#streak").textContent=solveStreak();$("#xp").textContent=S.xp;
   const lvl=Math.floor(S.xp/100)+1;$("#lvl").textContent=lvl;$("#lvlbar").style.width=(S.xp%100)+"%";
   $("#cardCount").textContent=Object.keys(S.prog).length;
   const revs=reviewsDue(),news=nextNew(),total=revs.length+news.length;
@@ -505,6 +505,8 @@ function rateSD(id,got){const pr=S.prog[id];if(!pr)return;const t=todayISO();if(
 /* ---------- grind calendar (contribution heatmap from solve dates) ---------- */
 function solveCounts(){const m={};Object.keys(SYNCED).forEach(id=>{if(isSD(id))return;const d=SYNCED[id].date;if(d)m[d]=(m[d]||0)+1;});return m;}
 function calLevel(n){return n===0?0:n<=1?1:n<=3?2:n<=5?3:4;}
+// consecutive days you've solved (by commit date); forgiving of "not solved yet today"
+function solveStreak(){const c=solveCounts();let d=new Date(todayISO()+"T00:00:00");if(!c[localISO(d)])d.setDate(d.getDate()-1);let s=0;while(c[localISO(d)]){s++;d.setDate(d.getDate()-1);}return s;}
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function renderCalendar(){
   const wrap=$("#calWrap");if(!wrap)return;
@@ -525,7 +527,7 @@ function renderCalendar(){
   attachCalTip();
   const total=activeKeys.reduce((s,k)=>s+counts[k],0);
   let longest=0,cur=0;days.forEach(d=>{if(counts[localISO(d)]){cur++;longest=Math.max(longest,cur);}else cur=0;});
-  let streak=0;{let d=new Date(end);while(counts[localISO(d)]){streak++;d.setDate(d.getDate()-1);}}
+  const streak=solveStreak();
   const el=$("#calSummary");if(el)el.innerHTML=`<div><b>${activeKeys.length}</b><div class="l">active days</div></div><div><b>${total}</b><div class="l">problems solved</div></div><div><b>${streak} 🔥</b><div class="l">current streak</div></div><div><b>${longest}</b><div class="l">longest streak</div></div>`;
 }
 
@@ -616,7 +618,7 @@ function attachDrag(){const card=document.getElementById('rvcard');if(!card)retu
   card.onpointermove=(e)=>{if(!drag)return;drag.dx=e.clientX-drag.x0;if(Math.abs(drag.dx)>6)drag.moved=true;card.style.transform=`translateX(${drag.dx}px) rotate(${drag.dx/20}deg)`;card.querySelector('.flag.got').style.opacity=Math.max(0,drag.dx/120);card.querySelector('.flag.rusty').style.opacity=Math.max(0,-drag.dx/120);};
   card.onpointerup=()=>{if(!drag)return;const dx=drag.dx;card.style.transition='transform .3s';if(dx>120){card.style.transform=`translateX(400px) rotate(20deg)`;setTimeout(()=>rate(true),180);}else if(dx<-120){card.style.transform=`translateX(-400px) rotate(-20deg)`;setTimeout(()=>rate(false),180);}else{card.style.transform='';card.querySelector('.flag.got').style.opacity=0;card.querySelector('.flag.rusty').style.opacity=0;}setTimeout(()=>{drag=null;},50);};
 }
-function rate(got){const id=rvQueue[rvIdx],pr=S.prog[id],t=todayISO();if(got){pr.box=Math.min((pr.box||1)+1,5);S.xp+=5;}else{pr.box=1;S.xp+=1;}pr.lastDone=t;pr.due=addDaysISO(t,INTERVALS[pr.box-1]);touchStreak();S.lastSession=t;save();rvIdx++;showCard();$("#xp").textContent=S.xp;$("#streak").textContent=S.streak;}
+function rate(got){const id=rvQueue[rvIdx],pr=S.prog[id],t=todayISO();if(got){pr.box=Math.min((pr.box||1)+1,5);S.xp+=5;}else{pr.box=1;S.xp+=1;}pr.lastDone=t;pr.due=addDaysISO(t,INTERVALS[pr.box-1]);touchStreak();S.lastSession=t;save();rvIdx++;showCard();$("#xp").textContent=S.xp;$("#streak").textContent=solveStreak();}
 
 /* ---------- settings / data ---------- */
 function saveSettings(){S.settings.newPerDay=Math.max(0,parseInt($("#setNew").value)||0);S.settings.revCap=Math.max(1,parseInt($("#setRev").value)||8);S.settings.g75only=$("#setG75").value==='yes';save();toast("Settings saved");render();}
