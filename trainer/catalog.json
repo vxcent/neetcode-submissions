@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-13T05:18:15+00:00",
+  "generated": "2026-07-13T05:30:27+00:00",
   "repo": "vxcent/neetcode-submissions",
   "count": 64,
   "cards": [
@@ -488,15 +488,15 @@
       "title": "Path Sum",
       "topic": "Data Structures & Algorithms",
       "ext": "py",
-      "subs": 1,
-      "codePath": "Data Structures & Algorithms/path-sum/submission-0.py",
-      "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    def hasPathSum(self, root: Optional[TreeNode], targetSum: int) -> bool:\n        def dfs(node, curSum):\n            if not node:\n                return False\n            curSum += node.val\n            if not node.left and not node.right:\n                return curSum == targetSum\n            return dfs(node.left, curSum) or dfs(node.right, curSum)\n        return dfs(root, 0)\n",
+      "subs": 2,
+      "codePath": "Data Structures & Algorithms/path-sum/submission-1.py",
+      "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nfrom collections import deque\nclass Solution:\n    def hasPathSum(self, root: Optional[TreeNode], targetSum: int) -> bool:\n        if not root:\n            return False\n        \n        queue = deque([(root, targetSum - root.val)])\n\n        while queue:\n            node, curr_target = queue.popleft()\n            if not node.left and not node.right and curr_target == 0:\n                return True\n            if node.left:\n                queue.append((node.left, curr_target - node.left.val))\n            if node.right:\n                queue.append((node.right, curr_target - node.right.val))\n        return False\n\n\n",
       "date": "2026-07-12",
       "enriched": {
-        "ds": "DFS recursion",
+        "ds": "BFS queue",
         "time": "O(n)",
-        "space": "O(h)",
-        "insight": "Accumulate sum during DFS and check equality only at leaf nodes."
+        "space": "O(n)",
+        "insight": "Track remaining target at each node; a leaf with zero remainder means a valid root-to-leaf path exists."
       }
     },
     {
