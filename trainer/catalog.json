@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-13T04:32:31+00:00",
+  "generated": "2026-07-13T04:41:36+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 62,
+  "count": 63,
   "cards": [
     {
       "id": "building-h2o",
@@ -241,6 +241,22 @@
         "time": "O(n)",
         "space": "O(h)",
         "insight": "Inorder = left, root, right; recursion naturally follows this order using the call stack."
+      }
+    },
+    {
+      "id": "binary-tree-right-side-view",
+      "title": "Binary Tree Right Side View",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/binary-tree-right-side-view/submission-0.py",
+      "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\n\n# id is that person can only see the tail of each level output\n# so walk the tree, and get the outtermost\nfrom collections import deque\nclass Solution:\n    def rightSideView(self, root: Optional[TreeNode]) -> List[int]:\n        q = deque()\n        if root:\n            q.append(root)\n        output = []\n\n        while q:\n            level_observable = []\n            for i in range(len(q)):\n                node = q.popleft()\n                level_observable.append(node.val)\n                if node.left:\n                    q.append(node.left)\n                if node.right:\n                    q.append(node.right)\n\n            output.append(level_observable[-1])\n        return output\n",
+      "date": "2026-07-12",
+      "enriched": {
+        "ds": "BFS",
+        "time": "O(n)",
+        "space": "O(n)",
+        "insight": "The rightmost node at each level is visible from the right side, so BFS and take the last element per level."
       }
     },
     {
