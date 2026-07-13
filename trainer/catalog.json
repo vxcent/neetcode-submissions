@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-13T00:50:13+00:00",
+  "generated": "2026-07-13T01:18:58+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 60,
+  "count": 61,
   "cards": [
     {
       "id": "building-h2o",
@@ -164,6 +164,22 @@
       }
     },
     {
+      "id": "balanced-binary-tree",
+      "title": "Balanced Binary Tree",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/balanced-binary-tree/submission-0.py",
+      "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\n\nclass Solution:\n    def isBalanced(self, root: Optional[TreeNode]) -> bool:\n        # heightMap = {}\n        if not root:\n            return True\n        \n        left = self.getHeight(root.left)\n        right = self.getHeight(root.right)\n        if abs(left - right) > 1:\n            return False\n        return self.isBalanced(root.left) and self.isBalanced(root.right)\n\n    def getHeight(self, node):\n        if not node:\n            return 0\n        left_height = self.getHeight(node.left)\n        right_height = self.getHeight(node.right)\n        return 1 + max(left_height, right_height)\n\n            ",
+      "date": "2026-07-12",
+      "enriched": {
+        "ds": "recursion",
+        "time": "O(n^2)",
+        "space": "O(n)",
+        "insight": "Recomputing subtree height at every node from the top yields quadratic time; a bottom-up pass can do it in O(n)."
+      }
+    },
+    {
       "id": "baseball-game",
       "title": "Baseball Game",
       "topic": "Data Structures & Algorithms",
@@ -220,7 +236,12 @@
       "codePath": "Data Structures & Algorithms/binary-tree-inorder-traversal/submission-0.py",
       "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    def inorderTraversal(self, root: Optional[TreeNode]) -> List[int]:\n        output = []\n\n        def dfs(node):\n            if not node:\n                return\n            if node.left:\n                dfs(node.left)\n            if node:\n                output.append(node.val)\n            if node.right:\n                dfs(node.right)\n        dfs(root)\n        return output",
       "date": "2026-07-12",
-      "enriched": null
+      "enriched": {
+        "ds": "DFS recursion",
+        "time": "O(n)",
+        "space": "O(h)",
+        "insight": "Inorder = left, root, right; recursion naturally follows this order using the call stack."
+      }
     },
     {
       "id": "climbing-stairs",
@@ -343,7 +364,12 @@
       "codePath": "Data Structures & Algorithms/insert-into-a-binary-search-tree/submission-0.py",
       "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    def insertIntoBST(self, root: Optional[TreeNode], val: int) -> Optional[TreeNode]:\n        if not root:\n            return TreeNode(val)\n        \n        if val > root.val:\n            root.right = self.insertIntoBST(root.right, val)\n        if val < root.val:\n            root.left = self.insertIntoBST(root.left, val)\n        return root",
       "date": "2026-07-12",
-      "enriched": null
+      "enriched": {
+        "ds": "BST recursion",
+        "time": "O(h)",
+        "space": "O(h)",
+        "insight": "Recursively traverse using BST ordering until reaching a null child, then attach the new node there."
+      }
     },
     {
       "id": "invert-a-binary-tree",
