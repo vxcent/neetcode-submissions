@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-13T05:30:27+00:00",
+  "generated": "2026-07-13T06:59:21+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 64,
+  "count": 65,
   "cards": [
     {
       "id": "building-h2o",
@@ -577,6 +577,22 @@
         "time": "O(n)",
         "space": "O(n)",
         "insight": "Count previous prefix sums equal to current prefix sum minus k to find valid subarrays ending at each index."
+      }
+    },
+    {
+      "id": "subsets",
+      "title": "Subsets",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/subsets/submission-0.py",
+      "code": "class Solution:\n    def subsets(self, nums: List[int]) -> List[List[int]]:\n        res = []\n        subset = []\n\n        def dfs(i):\n            if i >= len(nums):\n                res.append(subset.copy())\n                return\n            subset.append(nums[i])\n            dfs(i + 1)\n\n            subset.pop()\n            dfs(i+1)\n        dfs(0)\n        return res",
+      "date": "2026-07-12",
+      "enriched": {
+        "ds": "backtracking",
+        "time": "O(n * 2^n)",
+        "space": "O(n)",
+        "insight": "At each element, recursively choose to include or exclude it, then copy the subset when reaching the end."
       }
     },
     {
