@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-12T22:17:48+00:00",
+  "generated": "2026-07-13T00:50:13+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 59,
+  "count": 60,
   "cards": [
     {
       "id": "building-h2o",
@@ -210,6 +210,17 @@
         "space": "O(h)",
         "insight": "Diameter through a node is left height plus right height; track the global max during a post-order DFS."
       }
+    },
+    {
+      "id": "binary-tree-inorder-traversal",
+      "title": "Binary Tree Inorder Traversal",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/binary-tree-inorder-traversal/submission-0.py",
+      "code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    def inorderTraversal(self, root: Optional[TreeNode]) -> List[int]:\n        output = []\n\n        def dfs(node):\n            if not node:\n                return\n            if node.left:\n                dfs(node.left)\n            if node:\n                output.append(node.val)\n            if node.right:\n                dfs(node.right)\n        dfs(root)\n        return output",
+      "date": "2026-07-12",
+      "enriched": null
     },
     {
       "id": "climbing-stairs",
