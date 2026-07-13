@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-13T06:59:21+00:00",
+  "generated": "2026-07-13T07:27:41+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 65,
+  "count": 66,
   "cards": [
     {
       "id": "building-h2o",
@@ -274,6 +274,17 @@
         "space": "O(n)",
         "insight": "Memoize the Fibonacci recurrence so each step is computed once instead of exponentially many times."
       }
+    },
+    {
+      "id": "combination-target-sum",
+      "title": "Combination Target Sum",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/combination-target-sum/submission-0.py",
+      "code": "class Solution:\n    def combinationSum(self, nums: List[int], target: int) -> List[List[int]]:\n        output = []\n        subset = []\n\n        def dfs(index, total):\n            if total == target:\n                output.append(subset.copy())\n                return\n            if total > target:\n                return\n            for i in range(index, len(nums)):\n                n = nums[i]\n\n                subset.append(n)\n                dfs(i, total + n)\n                subset.pop()\n        dfs(0, 0)\n        return output",
+      "date": "2026-07-13",
+      "enriched": null
     },
     {
       "id": "depth-of-binary-tree",
