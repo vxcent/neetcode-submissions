@@ -1,0 +1,64 @@
+{
+  "_comment": "Reusable code templates shown in the trainer's Templates tab. Each: a memorize-able phrase, the one question to ask before writing the loop, and a skeleton. `code` may be a string or an array of lines (joined with newlines). Add your own here, or jot them in-app (those live in your browser and are included in Export).",
+  "templates": [
+    {
+      "id": "backtracking",
+      "title": "Backtracking (DFS)",
+      "when": "subsets · permutations · combinations · word search · N-queens · partitions",
+      "phrase": "Choose. Explore. Undo.",
+      "question": "What choices are available at this exact level?",
+      "code": [
+        "output = []",
+        "path = []",
+        "",
+        "def dfs(state):",
+        "    if goal_reached:",
+        "        output.append(path.copy())",
+        "        return",
+        "",
+        "    for choice in available_choices:",
+        "        if choice_is_invalid:",
+        "            continue",
+        "",
+        "        # choose",
+        "        path.append(choice)",
+        "        mark_choice_used()      # update any extra state",
+        "",
+        "        # explore",
+        "        dfs(next_state)",
+        "",
+        "        # undo",
+        "        unmark_choice_used()",
+        "        path.pop()"
+      ]
+    },
+    {
+      "id": "concurrent-bfs",
+      "title": "Concurrent level-order BFS (thread-pool fan-out)",
+      "when": "web crawler · parallel BFS over slow I/O (network / disk)",
+      "phrase": "Fan out the fetch. Fold in on one thread.",
+      "question": "What's the slow call to parallelize, and what shared state must stay single-threaded?",
+      "code": [
+        "from concurrent.futures import ThreadPoolExecutor",
+        "",
+        "def bfs_concurrent(start, get_neighbors, keep):",
+        "    visited = {start}",
+        "    with ThreadPoolExecutor(max_workers=10) as pool:",
+        "        frontier = [start]",
+        "        while frontier:",
+        "            nxt = []",
+        "            # fan out the SLOW call across the whole level...",
+        "            for neighbors in pool.map(get_neighbors, frontier):",
+        "                # ...but merge on THIS thread only -> no lock needed",
+        "                for n in neighbors:",
+        "                    if keep(n) and n not in visited:",
+        "                        visited.add(n)",
+        "                        nxt.append(n)",
+        "            frontier = nxt",
+        "    return list(visited)",
+        "",
+        "# web crawler: get_neighbors = htmlParser.getUrls,  keep = same-host filter"
+      ]
+    }
+  ]
+}
