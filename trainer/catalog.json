@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-14T03:20:07+00:00",
+  "generated": "2026-07-14T04:06:43+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 67,
+  "count": 68,
   "cards": [
     {
       "id": "building-h2o",
@@ -529,6 +529,22 @@
         "time": "O(n)",
         "space": "O(n)",
         "insight": "Track remaining target at each node; a leaf with zero remainder means a valid root-to-leaf path exists."
+      }
+    },
+    {
+      "id": "permutations",
+      "title": "Permutations",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/permutations/submission-0.py",
+      "code": "class Solution:\n    def permute(self, nums: List[int]) -> List[List[int]]:\n        output = []\n        subset = []\n        booleanList = [False for _ in range(len(nums))]\n\n        def dfs(index):\n            if len(subset) == len(nums):\n                output.append(subset.copy())\n                return\n            if not False in booleanList:\n                return\n            \n            for i in range(len(nums)):\n                if booleanList[i]:\n                    continue\n                booleanList[i] = True\n                subset.append(nums[i])\n\n                dfs(index + 1)\n\n                subset.pop()\n                booleanList[i] = False\n            \n        dfs(0)\n        return output\n\n\n",
+      "date": "2026-07-13",
+      "enriched": {
+        "ds": "backtracking",
+        "time": "O(n * n!)",
+        "space": "O(n)",
+        "insight": "Track used elements with a boolean array and backtrack by undoing each choice to enumerate all permutations."
       }
     },
     {
