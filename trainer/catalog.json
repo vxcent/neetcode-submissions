@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-14T04:06:43+00:00",
+  "generated": "2026-07-14T04:52:03+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 68,
+  "count": 69,
   "cards": [
     {
       "id": "building-h2o",
@@ -465,6 +465,22 @@
         "time": "O(n)",
         "space": "O(1)",
         "insight": "Skip non-alphanumeric chars from both ends and compare lowercase letters inward."
+      }
+    },
+    {
+      "id": "kth-largest-integer-in-a-stream",
+      "title": "Kth Largest Integer In A Stream",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/kth-largest-integer-in-a-stream/submission-0.py",
+      "code": "class KthLargest:\n\n    def __init__(self, k: int, nums: List[int]):\n        self.minHeap = nums\n        self.k = k\n\n        heapq.heapify(self.minHeap)\n        while len(self.minHeap) > k:\n            heapq.heappop(self.minHeap)\n\n    def add(self, val: int) -> int:\n        heapq.heappush(self.minHeap, val)\n        if len(self.minHeap) > self.k:\n            heapq.heappop(self.minHeap)\n        return self.minHeap[0]\n",
+      "date": "2026-07-13",
+      "enriched": {
+        "ds": "min-heap",
+        "time": "init: O(n log n), add: O(log k)",
+        "space": "O(k)",
+        "insight": "Maintain a min-heap of size k; its root is the kth largest element."
       }
     },
     {
