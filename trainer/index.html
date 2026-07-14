@@ -176,6 +176,19 @@
   .caltip{position:fixed;left:0;top:0;z-index:90;background:var(--card2);border:1px solid var(--line);color:var(--text);font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.45);opacity:0;transition:opacity .1s;white-space:nowrap}
   .caltip.show{opacity:1}.caltip b{color:var(--green)}
   .calcell{cursor:pointer}
+  /* templates */
+  .tplcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  .tplhead{display:flex;align-items:flex-start;gap:10px}
+  .tplcard .tt{font-weight:800;font-size:16px;margin-right:auto}
+  .tplwhen{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .tplphrase{margin:13px 0 11px;font-size:19px;font-weight:800;color:var(--green);letter-spacing:.2px}
+  .tplq{background:var(--card2);border-left:3px solid var(--blue);border-radius:8px;padding:9px 12px;font-size:13px;line-height:1.5;margin-bottom:12px}
+  .tplq b{color:var(--blue);text-transform:uppercase;font-size:10px;letter-spacing:.5px;display:block;margin-bottom:3px}
+  .tplcode{background:#0b0d13;border:1px solid var(--line);border-radius:10px;overflow:auto;max-height:56vh}
+  .tplcode pre{margin:0;padding:14px;font-size:13px;line-height:1.5;white-space:pre;color:#e7e9f1}
+  .tpldel{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 9px;font-size:11px;cursor:pointer;flex:none}
+  .tplmine{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--purple);border:1px solid var(--line);border-radius:6px;padding:2px 6px;align-self:center}
+  #tplForm label{margin-top:10px}
   /* mobile — iPhone Pro Max and down */
   @media (max-width:560px){
     .wrap{padding:14px 11px 84px}
@@ -210,6 +223,7 @@
     <button data-tab="today" class="active">Today</button>
     <button data-tab="cal">Calendar 📅</button>
     <button data-tab="cards">Cards 🃏</button>
+    <button data-tab="tpl">Templates 📝</button>
     <button data-tab="sd">System Design 🏛️</button>
     <button data-tab="topics">Topics</button>
     <button data-tab="weak">Weak Spots</button>
@@ -242,6 +256,23 @@
       <button class="pass" onclick="startReview()" id="reviewBtn">Swipe review</button>
     </div>
     <div class="grid" id="cardGrid"></div>
+  </section>
+
+  <section id="tab-tpl" class="hide">
+    <div class="card">
+      <b style="font-size:16px">📝 Templates</b>
+      <p class="muted" style="margin:4px 0 10px">Reusable skeletons across problem types — each with a phrase to memorize and the one question to ask before you write the loop. Jot your own; they're saved in this browser and included in Export.</p>
+      <button class="pass" onclick="toggleTplForm()" id="tplAddBtn">＋ New template</button>
+      <div id="tplForm" class="hide" style="margin-top:12px">
+        <label>Title</label><input type="text" id="tplT" placeholder="e.g. Sliding window"/>
+        <label>When to reach for it</label><input type="text" id="tplW" placeholder="e.g. longest/shortest substring, fixed/var window"/>
+        <label>Phrase to memorize</label><input type="text" id="tplP" placeholder="e.g. Grow right, shrink left"/>
+        <label>The one question to ask first</label><input type="text" id="tplQ" placeholder="e.g. What makes the window invalid?"/>
+        <label>Code skeleton</label><textarea id="tplC" style="min-height:150px;font-family:ui-monospace,Menlo,Consolas,monospace" placeholder="paste your skeleton…"></textarea>
+        <div class="modalbtns"><button class="ghost" onclick="toggleTplForm()">Cancel</button><button class="go" onclick="saveTpl()">Save template</button></div>
+      </div>
+    </div>
+    <div id="tplList"></div>
   </section>
 
   <section id="tab-sd" class="hide">
@@ -361,7 +392,7 @@ let SYNCED={}; // id -> {title,topic,ext,subs,code,enriched}
 /* ---------- state ---------- */
 const KEY="patternTrainerGH";
 const INTERVALS=[1,3,7,21,60];
-function defState(){return{xp:0,streak:0,lastActive:null,lastSession:null,catalogAt:null,settings:{newPerDay:2,revCap:8,g75only:true},prog:{},log:[]};}
+function defState(){return{xp:0,streak:0,lastActive:null,lastSession:null,catalogAt:null,settings:{newPerDay:2,revCap:8,g75only:true},prog:{},log:[],templates:[]};}
 let S=load();
 function load(){try{const r=localStorage.getItem(KEY);return r?Object.assign(defState(),JSON.parse(r)):defState();}catch(e){return defState();}}
 function save(){localStorage.setItem(KEY,JSON.stringify(S));}
@@ -425,7 +456,7 @@ function render(){
   $("#revCount").textContent=revs.length?`(${revs.length})`:"";
   $("#reviews").innerHTML=revs.length?revs.map(p=>probRow(p,"review")).join(""):`<div class="empty">No reviews due — your memory's holding.</div>`;
   $("#news").innerHTML=news.length?news.map(p=>probRow(p,"new")).join(""):`<div class="empty">No new problems queued for your filter.</div>`;
-  renderCards();renderSD();renderCheats();renderCalendar();renderTopics();renderWeak();renderLog();
+  renderCards();renderSD();renderCheats();renderCalendar();renderTemplates();renderTopics();renderWeak();renderLog();
   $("#setNew").value=S.settings.newPerDay;$("#setRev").value=S.settings.revCap;$("#setG75").value=S.settings.g75only?"yes":"no";
 }
 function dots(box){let h='<span class="dots">';for(let i=1;i<=5;i++)h+=`<i class="${i<=box?'on':''}"></i>`;return h+'</span>';}
@@ -548,6 +579,19 @@ function attachCalTip(){
   document.addEventListener('pointerdown',e=>{if(!e.target.closest('.calcell'))calHideTip();});
 }
 
+/* ---------- templates (reusable skeletons: phrase · question · code) ---------- */
+let TEMPLATES=[];
+async function loadTemplates(){try{const r=await fetch('templates.json?_='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();TEMPLATES=j.templates||[];renderTemplates();}}catch(e){}}
+function tplCode(t){return Array.isArray(t.code)?t.code.join('\n'):(t.code||'');}
+function tplCardHTML(t,mine){return `<div class="tplcard"><div class="tplhead"><span class="tt">${esc(t.title||'Untitled')}</span>${mine?`<span class="tplmine">yours</span><button class="tpldel" onclick="deleteTpl('${esc(t.id)}')">Delete</button>`:''}</div>${t.when?`<div class="tplwhen">${esc(t.when)}</div>`:''}${t.phrase?`<div class="tplphrase">${esc(t.phrase)}</div>`:''}${t.question?`<div class="tplq"><b>Ask first</b>${esc(t.question)}</div>`:''}<div class="tplcode"><pre>${esc(tplCode(t))}</pre></div></div>`;}
+function renderTemplates(){const el=$("#tplList");if(!el)return;const mine=(S.templates||[]);const all=[...TEMPLATES.map(t=>[t,false]),...mine.map(t=>[t,true])];el.innerHTML=all.length?all.map(([t,m])=>tplCardHTML(t,m)).join(''):`<div class="empty">No templates yet — add one above, or they sync from templates.json.</div>`;}
+function toggleTplForm(){const f=$("#tplForm");if(f)f.classList.toggle('hide');}
+function saveTpl(){const t=$("#tplT").value.trim();if(!t){toast('Give it a title');return;}
+  const tpl={id:'u'+Date.now(),title:t,when:$("#tplW").value.trim(),phrase:$("#tplP").value.trim(),question:$("#tplQ").value.trim(),code:$("#tplC").value};
+  S.templates=S.templates||[];S.templates.push(tpl);save();
+  ['tplT','tplW','tplP','tplQ','tplC'].forEach(id=>$("#"+id).value='');toggleTplForm();renderTemplates();toast('Template saved 📝');}
+function deleteTpl(id){if(!confirm('Delete this template?'))return;S.templates=(S.templates||[]).filter(t=>t.id!==id);save();renderTemplates();}
+
 /* ---------- cheat sheets (per-area decision tables) ---------- */
 let CHEATS=[];
 async function loadCheats(){try{const r=await fetch('cheatsheets.json?_='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json();CHEATS=j.sheets||[];renderCheats();}catch(e){}}
@@ -627,13 +671,14 @@ function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileRe
 function resetAll(){if(confirm("Erase all progress, XP, streak and logs? (cards will re-sync from GitHub)")){S=defState();save();render();loadCatalog(false);toast("Reset");}}
 
 /* ---------- tabs / toast ---------- */
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');['today','cal','cards','sd','topics','weak','log','settings'].forEach(t=>$('#tab-'+t).classList.add('hide'));$('#tab-'+b.dataset.tab).classList.remove('hide');if(b.dataset.tab==='cal')renderCalendar();});
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');['today','cal','cards','tpl','sd','topics','weak','log','settings'].forEach(t=>$('#tab-'+t).classList.add('hide'));$('#tab-'+b.dataset.tab).classList.remove('hide');if(b.dataset.tab==='cal')renderCalendar();});
 let toastT;function toast(m){const el=$("#toast");el.textContent=m;el.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("show"),2800);}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeZoom();}});
 
 render();
 loadCatalog(false);
 loadCheats();
+loadTemplates();
 setInterval(()=>loadCatalog(true),20000);           // pinned-tab live refresh
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadCatalog(true);});
 </script>
