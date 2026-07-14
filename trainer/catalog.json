@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-14T00:31:13+00:00",
+  "generated": "2026-07-14T02:59:33+00:00",
   "repo": "vxcent/neetcode-submissions",
   "count": 67,
   "cards": [
@@ -296,15 +296,15 @@
       "title": "Combination Target Sum Ii",
       "topic": "Data Structures & Algorithms",
       "ext": "py",
-      "subs": 1,
-      "codePath": "Data Structures & Algorithms/combination-target-sum-ii/submission-0.py",
-      "code": "#DFS approach to use recursion to check if target at the point could be reduced to 0\n# For each item, we create a subset of answers to append to output\n\nclass Solution:\n    def combinationSum2(self, candidates: List[int], target: int) -> List[List[int]]:\n        candidates.sort()\n        combinations = []\n        subset = []\n        \n        # need to keep track of both if target's reached and combination? no just None for target <0\n        def dfs(index, target):\n            subset.append(candidates[index])\n            target -= candidates[index]\n            if target < 0:\n                subset.pop()\n                return\n            \n            if target == 0:\n                combinations.append(subset.copy())\n                subset.pop()    \n                return\n\n            for i in range(index + 1, len(candidates)):\n                if i > index + 1 and candidates[i] == candidates[i-1]:\n                    continue\n                dfs(i, target)\n            subset.pop()\n\n        for i in range(len(candidates)):\n            if i > 0 and candidates[i] == candidates[i-1]:\n                continue\n            dfs(i, target)\n\n        return combinations\n            \n        \n",
+      "subs": 2,
+      "codePath": "Data Structures & Algorithms/combination-target-sum-ii/submission-1.py",
+      "code": "class Solution:\n    def combinationSum2(self, candidates: List[int], target: int) -> List[List[int]]:\n        candidates.sort()\n        subset = []\n        output = []\n\n\n        def dfs(index, currSum):\n            if currSum == target:\n                output.append(subset.copy())\n                return\n            if currSum > target:\n                return\n            for i in range(index, len(candidates)):\n                if i > index  and candidates[i] == candidates[i - 1]:\n                    continue\n                subset.append(candidates[i])\n                dfs(i + 1, currSum + candidates[i])\n                subset.pop()\n            return\n\n\n        dfs(0, 0)\n        return output\n",
       "date": "2026-07-13",
       "enriched": {
-        "ds": "backtracking DFS",
-        "time": "O(n * 2^n)",
+        "ds": "DFS backtracking",
+        "time": "O(2^n)",
         "space": "O(n)",
-        "insight": "Sort candidates and skip duplicates at the same recursion depth to avoid duplicate combinations."
+        "insight": "Sort candidates and skip duplicates at the same recursion level to avoid repeated combinations."
       }
     },
     {
