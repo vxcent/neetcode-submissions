@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-14T02:59:33+00:00",
+  "generated": "2026-07-14T03:07:20+00:00",
   "repo": "vxcent/neetcode-submissions",
   "count": 67,
   "cards": [
@@ -296,15 +296,15 @@
       "title": "Combination Target Sum Ii",
       "topic": "Data Structures & Algorithms",
       "ext": "py",
-      "subs": 2,
-      "codePath": "Data Structures & Algorithms/combination-target-sum-ii/submission-1.py",
-      "code": "class Solution:\n    def combinationSum2(self, candidates: List[int], target: int) -> List[List[int]]:\n        candidates.sort()\n        subset = []\n        output = []\n\n\n        def dfs(index, currSum):\n            if currSum == target:\n                output.append(subset.copy())\n                return\n            if currSum > target:\n                return\n            for i in range(index, len(candidates)):\n                if i > index  and candidates[i] == candidates[i - 1]:\n                    continue\n                subset.append(candidates[i])\n                dfs(i + 1, currSum + candidates[i])\n                subset.pop()\n            return\n\n\n        dfs(0, 0)\n        return output\n",
+      "subs": 3,
+      "codePath": "Data Structures & Algorithms/combination-target-sum-ii/submission-2.py",
+      "code": "class Solution:\n    def combinationSum2(self, candidates: List[int], target: int) -> List[List[int]]:\n        candidates.sort()\n        subset = []\n        output = []\n\n\n        def dfs(index, currSum):\n            if currSum == 0:\n                output.append(subset.copy())\n                return\n            if currSum < 0:\n                return\n            for i in range(index, len(candidates)):\n                if i > index  and candidates[i] == candidates[i - 1]:\n                    continue\n                subset.append(candidates[i])\n                dfs(i + 1, currSum - candidates[i])\n                subset.pop()\n            return\n\n\n        dfs(0, target)\n        return output\n",
       "date": "2026-07-13",
       "enriched": {
-        "ds": "DFS backtracking",
-        "time": "O(2^n)",
+        "ds": "backtracking",
+        "time": "O(n * 2^n)",
         "space": "O(n)",
-        "insight": "Sort candidates and skip duplicates at the same recursion level to avoid repeated combinations."
+        "insight": "Sort candidates and skip equal adjacent values at the same depth to avoid duplicate combinations."
       }
     },
     {
