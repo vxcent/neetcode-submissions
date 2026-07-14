@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-14T04:52:03+00:00",
+  "generated": "2026-07-14T07:32:33+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 69,
+  "count": 70,
   "cards": [
     {
       "id": "building-h2o",
@@ -481,6 +481,22 @@
         "time": "init: O(n log n), add: O(log k)",
         "space": "O(k)",
         "insight": "Maintain a min-heap of size k; its root is the kth largest element."
+      }
+    },
+    {
+      "id": "last-stone-weight",
+      "title": "Last Stone Weight",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/last-stone-weight/submission-0.py",
+      "code": "class Solution:\n    def lastStoneWeight(self, stones: List[int]) -> int:\n        stones = [-s for s in stones]\n        heapq.heapify(stones)\n\n        while len(stones) > 1:\n            first = heapq.heappop(stones)\n            second = heapq.heappop(stones)\n\n            if second > first:\n                heapq.heappush(stones, first - second)\n        stones.append(0)\n        return abs(stones[0])",
+      "date": "2026-07-14",
+      "enriched": {
+        "ds": "max heap",
+        "time": "O(n log n)",
+        "space": "O(n)",
+        "insight": "Simulate collisions by always extracting the two heaviest stones from a max-heap."
       }
     },
     {
