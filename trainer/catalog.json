@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-14T18:24:03+00:00",
+  "generated": "2026-07-15T06:30:06+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 71,
+  "count": 72,
   "cards": [
     {
       "id": "building-h2o",
@@ -386,6 +386,17 @@
         "space": "O(n)",
         "insight": "Use prefix sums to compare left and right subarray sums in constant time at each index."
       }
+    },
+    {
+      "id": "flood-fill",
+      "title": "Flood Fill",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/flood-fill/submission-1.py",
+      "code": "class Solution:\n    def floodFill(self, image: List[List[int]], sr: int, sc: int, color: int) -> List[List[int]]:\n        origin = image[sr][sc]\n        if origin == color:\n            return image\n        m, n = len(image), len(image[0])\n\n        def dfs(r, c):\n            if r < 0 or r >= m or c < 0 or c >= n or image[r][c] != origin:\n                return\n\n            image[r][c] = color\n\n            dfs(r+1, c)\n            dfs(r - 1, c)\n            dfs(r, c + 1)\n            dfs(r, c - 1)\n        \n        dfs(sr, sc)\n        return image\n\n        \n",
+      "date": "2026-07-14",
+      "enriched": null
     },
     {
       "id": "implement-prefix-tree",
