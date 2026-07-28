@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Interview Prep — Concurrency & System Design</title>
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#161b22; --card:#161b22; --line:#232b36;
+    --fg:#e6edf3; --muted:#9aa7b4; --accent:#4dd4c4; --accent2:#7c9cff;
+    --warn:#ffb454; --good:#4ade80; --bad:#ff7b72;
+    --k:#ff7b9c; --s:#9ece6a; --c:#6b7686;
+    --radius:14px; --maxw:920px;
+  }
+  :root[data-theme="light"]{
+    --bg:#f6f8fa; --bg2:#fff; --card:#fff; --line:#e2e8f0;
+    --fg:#1c2530; --muted:#586472; --accent:#0d9488; --accent2:#4f6bed;
+    --k:#c026d3; --s:#15803d; --c:#94a3b8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--fg);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code,pre{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+
+  /* Layout */
+  header.top{
+    position:sticky;top:0;z-index:30;
+    display:flex;align-items:center;gap:12px;
+    padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--line);
+  }
+  header.top .brand{font-weight:700;letter-spacing:.2px;font-size:15px}
+  header.top .brand small{color:var(--muted);font-weight:500}
+  header.top .spacer{flex:1}
+  .btn{
+    background:transparent;border:1px solid var(--line);color:var(--fg);
+    border-radius:10px;padding:7px 11px;font-size:13px;cursor:pointer;
+  }
+  .btn:hover{border-color:var(--accent)}
+  .menu-toggle{display:none}
+
+  .wrap{display:flex;max-width:1180px;margin:0 auto}
+  nav.side{
+    width:230px;flex:0 0 230px;position:sticky;top:57px;align-self:flex-start;
+    height:calc(100vh - 57px);overflow:auto;padding:16px 10px;border-right:1px solid var(--line);
+  }
+  nav.side a{
+    display:block;color:var(--muted);padding:8px 12px;border-radius:9px;
+    font-size:14px;margin-bottom:2px;cursor:pointer;
+  }
+  nav.side a:hover{background:var(--bg2);color:var(--fg);text-decoration:none}
+  nav.side a.active{background:linear-gradient(90deg,rgba(77,212,196,.16),transparent);color:var(--accent);font-weight:600}
+  nav.side .grp{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);opacity:.7;margin:16px 12px 6px}
+
+  main{flex:1;min-width:0;padding:26px 22px 120px;max-width:var(--maxw)}
+  section.page{display:none;animation:fade .25s ease}
+  section.page.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  h1{font-size:26px;margin:.2em 0 .1em;line-height:1.2}
+  h2{font-size:20px;margin:1.6em 0 .5em;border-bottom:1px solid var(--line);padding-bottom:6px}
+  h3{font-size:16px;margin:1.3em 0 .4em;color:var(--accent)}
+  p{margin:.6em 0}
+  .lede{color:var(--muted);font-size:15px;margin-top:.2em}
+  ul,ol{margin:.5em 0 .8em;padding-left:1.3em}
+  li{margin:.28em 0}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin:14px 0}
+  .grid{display:grid;gap:12px}
+  @media(min-width:640px){.grid.two{grid-template-columns:1fr 1fr}}
+
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);margin-right:6px}
+  .tag.io{color:var(--accent);border-color:var(--accent)}
+  .tag.cpu{color:var(--warn);border-color:var(--warn)}
+  .pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:8px;background:rgba(124,156,255,.15);color:var(--accent2)}
+
+  pre{background:#0a0e14;border:1px solid var(--line);border-radius:10px;padding:14px 15px;overflow:auto;font-size:13px;line-height:1.55;margin:.6em 0}
+  :root[data-theme="light"] pre{background:#0f1420;color:#e6edf3}
+  pre code{color:#cdd6e4}
+  .k{color:var(--k)} .s{color:var(--s)} .c{color:var(--c);font-style:italic}
+  p code,li code{background:var(--bg2);border:1px solid var(--line);padding:1px 6px;border-radius:6px;font-size:.88em}
+
+  .callout{border-left:3px solid var(--accent);background:var(--bg2);border-radius:0 10px 10px 0;padding:10px 14px;margin:12px 0;font-size:14px}
+  .callout.warn{border-color:var(--warn)}
+  .callout.bad{border-color:var(--bad)}
+  .callout b{color:var(--fg)}
+
+  svg{max-width:100%;height:auto;display:block;margin:8px auto}
+  .figure{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0;text-align:center}
+  .figure .cap{color:var(--muted);font-size:12.5px;margin-top:8px}
+  .sv-box{fill:var(--card);stroke:var(--line);stroke-width:1.5}
+  .sv-accent{fill:rgba(77,212,196,.16);stroke:var(--accent)}
+  .sv-accent2{fill:rgba(124,156,255,.16);stroke:var(--accent2)}
+  .sv-warn{fill:rgba(255,180,84,.16);stroke:var(--warn)}
+  .sv-t{fill:var(--fg);font:600 12px sans-serif}
+  .sv-tm{fill:var(--muted);font:11px sans-serif}
+  .sv-line{stroke:var(--muted);stroke-width:1.5;fill:none}
+  .sv-arrow{stroke:var(--accent2);stroke-width:1.8;fill:none;marker-end:url(#ah)}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px;display:block;overflow-x:auto}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--bg2);color:var(--fg)}
+  td{color:var(--muted)}
+  td b,td strong{color:var(--fg)}
+
+  /* progress checkboxes */
+  .track{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;margin:7px 0;background:var(--card);cursor:pointer}
+  .track input{margin-top:4px;width:17px;height:17px;accent-color:var(--accent);flex:0 0 auto}
+  .track.done{opacity:.55}
+  .track.done .t-title{text-decoration:line-through}
+  .t-title{font-weight:600;font-size:14px}
+  .t-sub{color:var(--muted);font-size:12.5px}
+
+  .timeline{position:relative;margin:16px 0 8px;padding-left:26px}
+  .timeline::before{content:"";position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:var(--line)}
+  .day{position:relative;margin:0 0 14px}
+  .day::before{content:"";position:absolute;left:-22px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--bg)}
+  .day .dh{font-weight:700;font-size:14px}
+  .day .dc{color:var(--muted);font-size:13px}
+
+  .progbar{height:8px;border-radius:6px;background:var(--bg2);overflow:hidden;border:1px solid var(--line)}
+  .progbar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0}
+
+  footer{color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);padding:20px 22px;text-align:center}
+
+  @media(max-width:820px){
+    .menu-toggle{display:inline-block}
+    nav.side{
+      position:fixed;left:0;top:57px;bottom:0;background:var(--bg2);z-index:25;
+      transform:translateX(-105%);transition:transform .22s ease;height:auto;width:250px;
+      box-shadow:8px 0 30px rgba(0,0,0,.4)
+    }
+    nav.side.open{transform:none}
+    main{padding:20px 16px 120px}
+    .scrim{display:none;position:fixed;inset:57px 0 0 0;background:rgba(0,0,0,.5);z-index:24}
+    .scrim.show{display:block}
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="btn menu-toggle" id="mtoggle" aria-label="Menu">☰</button>
+  <div class="brand">Interview Prep <small>· Python Concurrency &amp; System Design</small></div>
+  <div class="spacer"></div>
+  <button class="btn" id="themeBtn" title="Toggle theme">◐</button>
+</header>
+
+<div class="wrap">
+  <div class="scrim" id="scrim"></div>
+  <nav class="side" id="side">
+    <div class="grp">Start here</div>
+    <a data-go="overview" class="active">Overview &amp; strategy</a>
+    <a data-go="plan">10-day plan</a>
+    <div class="grp">Concurrency (Python)</div>
+    <a data-go="model">Mental model</a>
+    <a data-go="p-lock">1 · Locks &amp; shared state</a>
+    <a data-go="p-queue">2 · Producer / consumer</a>
+    <a data-go="p-sem">3 · Bounded concurrency</a>
+    <a data-go="p-pool">4 · Fan-out / fan-in</a>
+    <a data-go="p-async">5 · asyncio</a>
+    <a data-go="pitfalls">Pitfalls &amp; cheatsheet</a>
+    <div class="grp">System design</div>
+    <a data-go="framework">The framework</a>
+    <a data-go="blocks">Building blocks</a>
+    <a data-go="mocks">Mock questions</a>
+    <div class="grp">Meta</div>
+    <a data-go="collab">Collaborative tips</a>
+  </nav>
+
+  <main>
+    <!-- OVERVIEW -->
+    <section class="page active" id="overview">
+      <h1>Two interviews, ~10 days</h1>
+      <p class="lede">A 1-hour collaborative Python coding challenge (concurrency) and a 1-hour system design on a shared whiteboard. This page is your portable study kit — works offline, tracks your progress on this device.</p>
+
+      <div class="card">
+        <b>Your calibration</b>
+        <ul>
+          <li><span class="pill">2–3 hrs/day</span> — serious runway, ~25 hrs total.</li>
+          <li><b>Concurrency: rusty</b> → your biggest risk, <em>and</em> the track where you code live. Front-load it.</li>
+          <li><b>System design: basics known</b> → you don't need to <em>learn</em> it, you need reps out loud.</li>
+          <li><b>Mid-level bar</b> → clean execution + clear communication beat exotic depth.</li>
+        </ul>
+      </div>
+
+      <h2>The one-line strategy</h2>
+      <p>Get to <b>"can implement 5 concurrency patterns from a blank file"</b> in the first half. Then split time, adding spoken system-design reps. Both interviews are <b>collaborative</b> — they score how you think out loud as much as the answer.</p>
+
+      <h2>Tilt your hours</h2>
+      <div class="figure">
+        <svg viewBox="0 0 520 90" role="img" aria-label="Time split: 60% concurrency, 40% system design">
+          <rect x="10" y="26" width="300" height="38" rx="8" class="sv-accent"/>
+          <rect x="314" y="26" width="196" height="38" rx="8" class="sv-accent2"/>
+          <text x="160" y="50" text-anchor="middle" class="sv-t">Concurrency ≈ 60%</text>
+          <text x="412" y="50" text-anchor="middle" class="sv-t">System design ≈ 40%</text>
+          <text x="160" y="80" text-anchor="middle" class="sv-tm">weakest + live-coded → front-load</text>
+          <text x="412" y="80" text-anchor="middle" class="sv-tm">basics known → reps</text>
+        </svg>
+      </div>
+
+      <h2>Your progress</h2>
+      <div class="card">
+        <div class="progbar" style="margin-bottom:10px"><i id="progFill"></i></div>
+        <div class="t-sub" id="progText">0% complete</div>
+        <p class="t-sub" style="margin-top:10px">Check items off as you go on the pattern pages — it saves to this browser, so it survives flights and refreshes.</p>
+      </div>
+    </section>
+
+    <!-- PLAN -->
+    <section class="page" id="plan">
+      <h1>The 10-day plan</h1>
+      <p class="lede">2–3 hrs/day. Concurrency-heavy early, then interleave. Adjust freely — the <em>drills</em> matter more than the calendar.</p>
+      <div class="timeline">
+        <div class="day"><div class="dh">Day 1 · Foundations</div><div class="dc">Mental model (GIL, threads vs async vs processes). Write Pattern 1 (Lock). Skim the design framework — don't practice yet.</div></div>
+        <div class="day"><div class="dh">Day 2 · The core pattern</div><div class="dc">Pattern 2 (Queue producer/consumer + worker pool) — do it twice. Design blocks: load balancer, caching, SQL vs NoSQL.</div></div>
+        <div class="day"><div class="dh">Day 3 · Bounding + fan-out</div><div class="dc">Pattern 3 (Semaphore) + Pattern 4 (ThreadPoolExecutor). Design blocks: sharding, replication, queues, CDN, CAP.</div></div>
+        <div class="day"><div class="dh">Day 4 · Async</div><div class="dc">asyncio crash course; rewrite Pattern 4 as Pattern 5. <b>Mock #1: URL shortener</b> — out loud, on a whiteboard tool, 45 min.</div></div>
+        <div class="day"><div class="dh">Day 5 · Timed drills</div><div class="dc">Implement Patterns 1–5 from blank, 20 min each. Note fumbles. <b>Mock #2: Rate limiter / API gateway.</b></div></div>
+        <div class="day"><div class="dh">Day 6 · Harden</div><div class="dc">Re-drill 2 weakest patterns; add shutdown, timeouts, cancellation, exception propagation. <b>Mock #3: Chat / notifications.</b></div></div>
+        <div class="day"><div class="dh">Day 7 · Full coding mock</div><div class="dc">Concurrent web crawler (bounded concurrency + dedup), 60 min timed. Review tradeoff vocabulary.</div></div>
+        <div class="day"><div class="dh">Day 8 · Narrate + design</div><div class="dc">Fix crawler gaps; practice talking while coding. <b>Mock #4: Collaborative whiteboard/editor</b> (the meta-hint).</div></div>
+        <div class="day"><div class="dh">Day 9 · Polish</div><div class="dc">Re-implement 2 favorite patterns clean; review common bugs. One more full design mock on your weakest area.</div></div>
+        <div class="day"><div class="dh">Day 10 · Taper</div><div class="dc">Light review of the cheatsheet + framework only. Rest. Walk in fresh.</div></div>
+      </div>
+    </section>
+
+    <!-- MENTAL MODEL -->
+    <section class="page" id="model">
+      <h1>Concurrency mental model</h1>
+      <p class="lede">Get this straight and you'll pick the right tool instantly — and you'll have a crisp sentence to say out loud.</p>
+
+      <h2>The decision that drives everything</h2>
+      <div class="figure">
+        <svg viewBox="0 0 560 250" role="img" aria-label="Decision tree: IO-bound vs CPU-bound">
+          <rect x="200" y="10" width="160" height="42" rx="10" class="sv-box"/>
+          <text x="280" y="30" text-anchor="middle" class="sv-t">Is the work…</text>
+          <text x="280" y="45" text-anchor="middle" class="sv-tm">waiting or computing?</text>
+
+          <path class="sv-line" d="M240 52 L120 96"/>
+          <path class="sv-line" d="M320 52 L440 96"/>
+
+          <rect x="30" y="96" width="180" height="46" rx="10" class="sv-accent"/>
+          <text x="120" y="116" text-anchor="middle" class="sv-t">I/O-bound</text>
+          <text x="120" y="132" text-anchor="middle" class="sv-tm">network, disk, DB, sleep</text>
+
+          <rect x="350" y="96" width="180" height="46" rx="10" class="sv-warn"/>
+          <text x="440" y="116" text-anchor="middle" class="sv-t">CPU-bound</text>
+          <text x="440" y="132" text-anchor="middle" class="sv-tm">math, parsing, compression</text>
+
+          <path class="sv-line" d="M120 142 L120 182"/>
+          <path class="sv-line" d="M440 142 L440 182"/>
+
+          <rect x="10" y="182" width="220" height="56" rx="10" class="sv-box"/>
+          <text x="120" y="204" text-anchor="middle" class="sv-t">threading / asyncio</text>
+          <text x="120" y="222" text-anchor="middle" class="sv-tm">GIL released while waiting</text>
+
+          <rect x="330" y="182" width="220" height="56" rx="10" class="sv-box"/>
+          <text x="440" y="204" text-anchor="middle" class="sv-t">multiprocessing</text>
+          <text x="440" y="222" text-anchor="middle" class="sv-tm">true parallel CPU, own GIL each</text>
+        </svg>
+        <div class="cap">The first question to ask (yourself and the interviewer): what is this actually waiting on?</div>
+      </div>
+
+      <h2>The GIL, in one breath</h2>
+      <div class="callout"><b>Say this:</b> "CPython's GIL lets only one thread execute Python bytecode at a time, so threads don't speed up CPU work — but the GIL is released during I/O, so threads (or asyncio) still give big wins for I/O-bound workloads. For CPU parallelism I'd reach for <code>multiprocessing</code>."</div>
+
+      <h3>threads vs asyncio — same use case, different style</h3>
+      <table>
+        <tr><th></th><th>threading</th><th>asyncio</th></tr>
+        <tr><td><b>Concurrency by</b></td><td>OS threads, pre-emptive</td><td>one thread, cooperative (<code>await</code>)</td></tr>
+        <tr><td><b>Good for</b></td><td>blocking libs, moderate fan-out</td><td>thousands of I/O tasks</td></tr>
+        <tr><td><b>Race risk</b></td><td>yes — needs locks</td><td>lower (single thread) but still <code>await</code> points interleave</td></tr>
+        <tr><td><b>Blocking call</b></td><td>fine</td><td>poisons the loop — wrap in <code>asyncio.to_thread</code></td></tr>
+      </table>
+      <div class="callout warn">If the challenge hands you a <b>blocking</b> function (e.g. <code>requests.get</code>), threads/<code>ThreadPoolExecutor</code> are the low-risk choice. Reach for asyncio when the API is already async (<code>aiohttp</code>) or they ask for thousands of connections.</div>
+    </section>
+
+    <!-- PATTERN 1 -->
+    <section class="page" id="p-lock">
+      <h1>1 · Locks &amp; shared state</h1>
+      <p><span class="tag io">I/O or CPU</span><span class="tag">threading.Lock</span></p>
+      <p class="lede">The foundation: any mutable state touched by multiple threads needs a lock. <code>+=</code> is <b>not</b> atomic — it's read, add, write, and threads can interleave between those steps.</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 520 170" role="img" aria-label="Race condition on a shared counter">
+          <rect x="20" y="20" width="140" height="40" rx="9" class="sv-accent"/>
+          <text x="90" y="44" text-anchor="middle" class="sv-t">Thread A</text>
+          <rect x="20" y="110" width="140" height="40" rx="9" class="sv-accent2"/>
+          <text x="90" y="134" text-anchor="middle" class="sv-t">Thread B</text>
+
+          <rect x="360" y="65" width="140" height="40" rx="9" class="sv-box"/>
+          <text x="430" y="82" text-anchor="middle" class="sv-t">count</text>
+          <text x="430" y="98" text-anchor="middle" class="sv-tm">shared</text>
+
+          <path class="sv-arrow" d="M160 36 L356 80"/>
+          <path class="sv-arrow" d="M160 132 L356 92"/>
+          <text x="255" y="30" text-anchor="middle" class="sv-tm">read 0 → write 1</text>
+          <text x="255" y="150" text-anchor="middle" class="sv-tm">read 0 → write 1  (lost update!)</text>
+        </svg>
+        <div class="cap">Without a lock, two "+1"s can both read 0 and both write 1 — you lose an increment.</div>
+      </div>
+
+      <pre><code class="python">import threading
+
+class Counter:
+    def __init__(self):
+        self._value = 0
+        self._lock = threading.Lock()
+
+    def increment(self):
+        with self._lock:          # read-add-write is now atomic
+            self._value += 1
+
+    @property
+    def value(self):
+        with self._lock:
+            return self._value
+</code></pre>
+
+      <h3>What to know</h3>
+      <ul>
+        <li><code>Lock</code> = mutual exclusion. <code>RLock</code> = re-entrant (same thread can acquire twice) — use when a locked method calls another locked method.</li>
+        <li>Always use <code>with lock:</code> so it releases even on exception.</li>
+        <li>Keep the critical section <b>tiny</b> — hold the lock only around the shared mutation, not the slow work.</li>
+        <li>A thread-safe cache is the same idea: guard the dict with a lock, or use one lock per shard for less contention.</li>
+      </ul>
+      <div class="callout bad"><b>Deadlock:</b> two threads each holding a lock the other needs. Avoid by always acquiring multiple locks in a <b>consistent order</b>, or by not needing two locks (use a <code>Queue</code> instead).</div>
+
+      <label class="track" data-id="lock"><input type="checkbox"><span><span class="t-title">Drilled: thread-safe counter + cache</span><br><span class="t-sub">Can write both from a blank file in under 5 min.</span></span></label>
+    </section>
+
+    <!-- PATTERN 2 -->
+    <section class="page" id="p-queue">
+      <h1>2 · Producer / consumer + worker pool</h1>
+      <p><span class="tag io">I/O-bound</span><span class="tag">queue.Queue</span></p>
+      <p class="lede">The single most likely shape in a concurrency challenge. A thread-safe <code>queue.Queue</code> lets producers hand work to a fixed pool of worker threads — no manual locking needed, the queue handles it.</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 560 200" role="img" aria-label="Producers push to a queue, workers pull from it">
+          <rect x="20" y="80" width="110" height="40" rx="9" class="sv-accent2"/>
+          <text x="75" y="104" text-anchor="middle" class="sv-t">Producer</text>
+
+          <rect x="200" y="60" width="120" height="80" rx="9" class="sv-box"/>
+          <text x="260" y="92" text-anchor="middle" class="sv-t">Queue</text>
+          <text x="260" y="112" text-anchor="middle" class="sv-tm">thread-safe</text>
+          <rect x="212" y="120" width="16" height="12" class="sv-accent"/>
+          <rect x="232" y="120" width="16" height="12" class="sv-accent"/>
+          <rect x="252" y="120" width="16" height="12" class="sv-accent"/>
+
+          <rect x="400" y="20" width="140" height="34" rx="9" class="sv-accent"/>
+          <text x="470" y="42" text-anchor="middle" class="sv-t">Worker 1</text>
+          <rect x="400" y="83" width="140" height="34" rx="9" class="sv-accent"/>
+          <text x="470" y="105" text-anchor="middle" class="sv-t">Worker 2</text>
+          <rect x="400" y="146" width="140" height="34" rx="9" class="sv-accent"/>
+          <text x="470" y="168" text-anchor="middle" class="sv-t">Worker N</text>
+
+          <path class="sv-arrow" d="M130 100 L196 100"/>
+          <path class="sv-arrow" d="M320 92 L396 40"/>
+          <path class="sv-arrow" d="M320 100 L396 100"/>
+          <path class="sv-arrow" d="M320 108 L396 160"/>
+        </svg>
+        <div class="cap">Producers <code>put()</code>, workers <code>get()</code>. The pool size caps concurrency; the queue decouples the two sides.</div>
+      </div>
+
+      <pre><code class="python">import threading, queue
+
+def worker(q, results, lock):
+    while True:
+        item = q.get()
+        if item is None:          # sentinel = shut down
+            q.task_done()
+            break
+        out = item * item         # ... the real work ...
+        with lock:
+            results.append(out)
+        q.task_done()
+
+q = queue.Queue()
+results, lock = [], threading.Lock()
+workers = [threading.Thread(target=worker, args=(q, results, lock))
+           for _ in range(4)]
+for t in workers:
+    t.start()
+
+for i in range(20):               # produce
+    q.put(i)
+
+q.join()                          # block until every item is processed
+for _ in workers:                 # one sentinel per worker
+    q.put(None)
+for t in workers:
+    t.join()
+</code></pre>
+
+      <h3>The three things that trip people up</h3>
+      <ul>
+        <li><b>Shutdown:</b> workers loop forever — send a <code>None</code> sentinel per worker (or use a shared "stop" <code>Event</code>).</li>
+        <li><b>task_done / join:</b> call <code>q.task_done()</code> for every <code>get()</code>; <code>q.join()</code> waits until the count hits zero.</li>
+        <li><b>Results:</b> if workers append to a shared list, guard it — or have each return via a results <code>Queue</code>.</li>
+      </ul>
+      <div class="callout"><b>Bounded queue:</b> <code>queue.Queue(maxsize=100)</code> gives you backpressure — producers block when it's full, so a fast producer can't exhaust memory.</div>
+
+      <label class="track" data-id="queue"><input type="checkbox"><span><span class="t-title">Drilled: producer/consumer worker pool</span><br><span class="t-sub">Includes clean shutdown + task_done/join.</span></span></label>
+    </section>
+
+    <!-- PATTERN 3 -->
+    <section class="page" id="p-sem">
+      <h1>3 · Bounded concurrency / rate limiter</h1>
+      <p><span class="tag io">I/O-bound</span><span class="tag">threading.Semaphore</span></p>
+      <p class="lede">"At most N at once." A <code>Semaphore</code> is a counter with a floor of zero — <code>acquire()</code> blocks when N are already in flight. Perfect for "don't hammer the API with more than 5 concurrent requests."</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 520 150" role="img" aria-label="Semaphore admits at most 3 concurrent tasks">
+          <rect x="20" y="55" width="130" height="40" rx="9" class="sv-box"/>
+          <text x="85" y="79" text-anchor="middle" class="sv-t">many tasks</text>
+          <rect x="210" y="40" width="90" height="70" rx="10" class="sv-warn"/>
+          <text x="255" y="70" text-anchor="middle" class="sv-t">Semaphore</text>
+          <text x="255" y="90" text-anchor="middle" class="sv-tm">permits = 3</text>
+          <rect x="360" y="18" width="140" height="26" rx="8" class="sv-accent"/>
+          <text x="430" y="36" text-anchor="middle" class="sv-tm">running</text>
+          <rect x="360" y="52" width="140" height="26" rx="8" class="sv-accent"/>
+          <text x="430" y="70" text-anchor="middle" class="sv-tm">running</text>
+          <rect x="360" y="86" width="140" height="26" rx="8" class="sv-accent"/>
+          <text x="430" y="104" text-anchor="middle" class="sv-tm">running</text>
+          <path class="sv-arrow" d="M150 75 L206 75"/>
+          <path class="sv-arrow" d="M300 66 L356 31"/>
+          <path class="sv-arrow" d="M300 75 L356 65"/>
+          <path class="sv-arrow" d="M300 84 L356 99"/>
+          <text x="255" y="130" text-anchor="middle" class="sv-tm">4th task waits for a permit to free up</text>
+        </svg>
+      </div>
+
+      <pre><code class="python">import threading
+
+sem = threading.Semaphore(3)      # at most 3 concurrent
+
+def fetch(url):
+    with sem:                     # blocks if 3 are already running
+        return do_request(url)    # ... work ...
+
+threads = [threading.Thread(target=fetch, args=(u,)) for u in urls]
+for t in threads: t.start()
+for t in threads: t.join()
+</code></pre>
+
+      <h3>Rate limiting flavors — name them</h3>
+      <ul>
+        <li><b>Concurrency limit</b> (above): N in flight at once → Semaphore.</li>
+        <li><b>Requests-per-second</b>: <b>token bucket</b> — refill tokens at a fixed rate, each call spends one, block/reject when empty. Mention this if they ask for "10 req/sec."</li>
+        <li>Async twin: <code>asyncio.Semaphore(N)</code> with <code>async with</code>.</li>
+      </ul>
+
+      <label class="track" data-id="sem"><input type="checkbox"><span><span class="t-title">Drilled: semaphore + can describe token bucket</span></span></label>
+    </section>
+
+    <!-- PATTERN 4 -->
+    <section class="page" id="p-pool">
+      <h1>4 · Fan-out / fan-in</h1>
+      <p><span class="tag io">I/O-bound</span><span class="tag">concurrent.futures</span></p>
+      <p class="lede">The cleanest API under time pressure. Submit many jobs to a <code>ThreadPoolExecutor</code>, collect results as they finish. Reach for this <b>first</b> when the task is "do these N independent things in parallel."</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 540 180" role="img" aria-label="Fan out work to a pool then fan in results">
+          <rect x="210" y="10" width="120" height="34" rx="9" class="sv-accent2"/>
+          <text x="270" y="32" text-anchor="middle" class="sv-t">submit N jobs</text>
+          <rect x="30" y="75" width="110" height="32" rx="8" class="sv-accent"/>
+          <rect x="160" y="75" width="110" height="32" rx="8" class="sv-accent"/>
+          <rect x="290" y="75" width="110" height="32" rx="8" class="sv-accent"/>
+          <rect x="410" y="75" width="110" height="32" rx="8" class="sv-accent"/>
+          <text x="85" y="96" text-anchor="middle" class="sv-tm">worker</text>
+          <text x="215" y="96" text-anchor="middle" class="sv-tm">worker</text>
+          <text x="345" y="96" text-anchor="middle" class="sv-tm">worker</text>
+          <text x="465" y="96" text-anchor="middle" class="sv-tm">worker</text>
+          <rect x="200" y="140" width="140" height="34" rx="9" class="sv-accent2"/>
+          <text x="270" y="162" text-anchor="middle" class="sv-t">as_completed</text>
+          <path class="sv-arrow" d="M240 44 L90 73"/>
+          <path class="sv-arrow" d="M258 44 L215 73"/>
+          <path class="sv-arrow" d="M282 44 L345 73"/>
+          <path class="sv-arrow" d="M300 44 L465 73"/>
+          <path class="sv-arrow" d="M90 107 L250 140"/>
+          <path class="sv-arrow" d="M215 107 L262 138"/>
+          <path class="sv-arrow" d="M345 107 L290 138"/>
+          <path class="sv-arrow" d="M465 107 L310 140"/>
+        </svg>
+      </div>
+
+      <pre><code class="python">from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def fetch(url):
+    return len(do_request(url))    # ... work, returns a result ...
+
+urls = [...]
+with ThreadPoolExecutor(max_workers=8) as pool:
+    future_to_url = {pool.submit(fetch, u): u for u in urls}
+    for fut in as_completed(future_to_url):
+        url = future_to_url[fut]
+        try:
+            size = fut.result()    # re-raises worker exceptions here
+        except Exception as e:
+            print(f"{url} failed: {e}")
+        else:
+            print(f"{url} -> {size}")
+</code></pre>
+
+      <h3>Why interviewers like this</h3>
+      <ul>
+        <li><code>with ... as pool:</code> handles startup/shutdown for you — no manual thread juggling.</li>
+        <li><code>pool.map(fn, iterable)</code> is even terser when you want results <b>in order</b> and don't need per-item error handling.</li>
+        <li><code>as_completed</code> gives results <b>as they finish</b> — good for streaming / progress.</li>
+        <li>Exceptions are captured in the Future and re-raised at <code>.result()</code> — handle them there.</li>
+        <li>Swap to <code>ProcessPoolExecutor</code> (same API!) if it turns out CPU-bound.</li>
+      </ul>
+
+      <label class="track" data-id="pool"><input type="checkbox"><span><span class="t-title">Drilled: ThreadPoolExecutor + as_completed + errors</span></span></label>
+    </section>
+
+    <!-- PATTERN 5 -->
+    <section class="page" id="p-async">
+      <h1>5 · asyncio</h1>
+      <p><span class="tag io">I/O-bound, high fan-out</span><span class="tag">async / await</span></p>
+      <p class="lede">One thread, an event loop, cooperative multitasking. While one coroutine <code>await</code>s I/O, the loop runs others. Scales to thousands of concurrent connections cheaply.</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 520 160" role="img" aria-label="Event loop switching between coroutines at await points">
+          <circle cx="110" cy="80" r="55" class="sv-accent2"/>
+          <text x="110" y="76" text-anchor="middle" class="sv-t">event</text>
+          <text x="110" y="92" text-anchor="middle" class="sv-t">loop</text>
+          <rect x="300" y="18" width="200" height="30" rx="8" class="sv-box"/>
+          <text x="400" y="38" text-anchor="middle" class="sv-tm">coro A — await network …</text>
+          <rect x="300" y="65" width="200" height="30" rx="8" class="sv-box"/>
+          <text x="400" y="85" text-anchor="middle" class="sv-tm">coro B — running now</text>
+          <rect x="300" y="112" width="200" height="30" rx="8" class="sv-box"/>
+          <text x="400" y="132" text-anchor="middle" class="sv-tm">coro C — await DB …</text>
+          <path class="sv-arrow" d="M165 70 L296 33"/>
+          <path class="sv-arrow" d="M165 80 L296 80"/>
+          <path class="sv-arrow" d="M165 90 L296 127"/>
+        </svg>
+        <div class="cap">Only one coroutine runs at a time; <code>await</code> is where it hands control back to the loop.</div>
+      </div>
+
+      <pre><code class="python">import asyncio
+
+async def fetch(url, sem):
+    async with sem:                       # bound concurrency
+        await asyncio.sleep(0.1)          # stand-in for real async I/O
+        return url.upper()
+
+async def main(urls):
+    sem = asyncio.Semaphore(8)
+    tasks = [fetch(u, sem) for u in urls]
+    return await asyncio.gather(*tasks, return_exceptions=True)
+
+results = asyncio.run(main(urls))
+</code></pre>
+
+      <h3>The essentials</h3>
+      <ul>
+        <li><code>asyncio.run(main())</code> is the single entry point; <code>await</code> only works inside <code>async def</code>.</li>
+        <li><code>asyncio.gather(*tasks)</code> = fan-out + wait-all. <code>return_exceptions=True</code> stops one failure from cancelling the rest.</li>
+        <li><code>asyncio.Queue</code>, <code>asyncio.Semaphore</code>, <code>asyncio.Lock</code> mirror the threading versions with <code>await</code>.</li>
+        <li><b>Never</b> call a blocking function directly — it freezes the whole loop. Wrap it: <code>await asyncio.to_thread(blocking_fn, arg)</code>.</li>
+        <li>Cancel/timeout: <code>await asyncio.wait_for(coro, timeout=5)</code>.</li>
+      </ul>
+      <div class="callout warn">If you're unsure between threads and asyncio in the live round and the given I/O is blocking, <b>use threads</b> — it's fewer moving parts. Bring up asyncio as "how I'd scale this to thousands of connections."</div>
+
+      <label class="track" data-id="async"><input type="checkbox"><span><span class="t-title">Drilled: asyncio gather + Semaphore + to_thread</span></span></label>
+    </section>
+
+    <!-- PITFALLS -->
+    <section class="page" id="pitfalls">
+      <h1>Pitfalls &amp; cheatsheet</h1>
+
+      <h2>Bugs that cost points</h2>
+      <table>
+        <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+        <tr><td>Lost updates / wrong total</td><td><code>+=</code> or dict write without a lock</td><td>guard shared mutable state with a <code>Lock</code></td></tr>
+        <tr><td>Program hangs forever</td><td><code>q.join()</code> but a worker died / no <code>task_done()</code></td><td>call <code>task_done()</code> once per <code>get()</code>; sentinel shutdown</td></tr>
+        <tr><td>Deadlock</td><td>two locks acquired in different orders</td><td>consistent lock ordering, or use a <code>Queue</code></td></tr>
+        <tr><td>asyncio "hangs" / no speedup</td><td>a blocking call inside a coroutine</td><td><code>await asyncio.to_thread(...)</code></td></tr>
+        <tr><td>Silent failures</td><td>exception swallowed in a worker/Future</td><td><code>fut.result()</code> in try/except; <code>return_exceptions</code></td></tr>
+        <tr><td>No speedup on CPU work</td><td>threads + GIL</td><td><code>ProcessPoolExecutor</code></td></tr>
+      </table>
+
+      <h2>Which tool — 5-second pick</h2>
+      <table>
+        <tr><th>Situation</th><th>Reach for</th></tr>
+        <tr><td>N independent I/O jobs, want results</td><td><b>ThreadPoolExecutor</b> + <code>as_completed</code></td></tr>
+        <tr><td>Stream of work → pool of workers</td><td><b>queue.Queue</b> + worker threads</td></tr>
+        <tr><td>"At most N at once"</td><td><b>Semaphore</b></td></tr>
+        <tr><td>Protect a shared counter/cache/dict</td><td><b>Lock</b></td></tr>
+        <tr><td>Thousands of connections / async API given</td><td><b>asyncio</b> + <code>gather</code></td></tr>
+        <tr><td>CPU-bound parallelism</td><td><b>ProcessPoolExecutor</b></td></tr>
+      </table>
+
+      <div class="callout"><b>Opening move in the live round:</b> ask "is this I/O-bound or CPU-bound, and roughly how many tasks?" — it picks your tool <em>and</em> shows you think before typing.</div>
+    </section>
+
+    <!-- FRAMEWORK -->
+    <section class="page" id="framework">
+      <h1>System design: the framework</h1>
+      <p class="lede">You know the pieces — what wins is a <b>repeatable order</b> so you never freeze on a blank whiteboard. Same 7 steps every time.</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 560 300" role="img" aria-label="Seven step system design framework">
+          <g>
+            <rect x="60" y="12" width="440" height="34" rx="9" class="sv-accent"/><text x="280" y="34" text-anchor="middle" class="sv-t">1 · Requirements — functional + non-functional (scale, latency, consistency)</text>
+            <rect x="60" y="52" width="440" height="34" rx="9" class="sv-box"/><text x="280" y="74" text-anchor="middle" class="sv-t">2 · Estimate — QPS, storage, read:write ratio (order of magnitude)</text>
+            <rect x="60" y="92" width="440" height="34" rx="9" class="sv-box"/><text x="280" y="114" text-anchor="middle" class="sv-t">3 · API — the handful of endpoints / methods</text>
+            <rect x="60" y="132" width="440" height="34" rx="9" class="sv-box"/><text x="280" y="154" text-anchor="middle" class="sv-t">4 · Data model — entities, SQL vs NoSQL, access patterns</text>
+            <rect x="60" y="172" width="440" height="34" rx="9" class="sv-accent2"/><text x="280" y="194" text-anchor="middle" class="sv-t">5 · High-level design — draw the boxes &amp; data flow</text>
+            <rect x="60" y="212" width="440" height="34" rx="9" class="sv-warn"/><text x="280" y="234" text-anchor="middle" class="sv-t">6 · Scale the bottleneck — cache, shard, replicate, queue</text>
+            <rect x="60" y="252" width="440" height="34" rx="9" class="sv-box"/><text x="280" y="274" text-anchor="middle" class="sv-t">7 · Tradeoffs — what you'd change, what breaks first</text>
+          </g>
+        </svg>
+      </div>
+
+      <h3>Step 1 is where mid-level candidates win or lose</h3>
+      <p>Spend the first 5–8 minutes <b>driving requirements</b>, not drawing. Nail down: who uses it, the 2–3 core features (cut the rest), rough scale, and which of <b>consistency vs availability vs latency</b> matters most. Write them in a corner of the board and refer back — every later decision cites one of them.</p>
+
+      <h3>Estimation, the lazy way</h3>
+      <ul>
+        <li>Pick round numbers: "say 1M daily users, 10 actions each → 10M/day ≈ ~120 writes/sec average, ~10× peak → ~1200/sec."</li>
+        <li>Reads usually dominate writes (often 100:1) → that's your cue for caching + read replicas.</li>
+        <li>Storage: bytes/record × records/day × retention. One or two significant figures is plenty.</li>
+      </ul>
+      <div class="callout"><b>Say your assumptions out loud</b> and let the interviewer correct them — that's collaboration, and it de-risks the whole design.</div>
+    </section>
+
+    <!-- BUILDING BLOCKS -->
+    <section class="page" id="blocks">
+      <h1>Building blocks</h1>
+      <p class="lede">The vocabulary you assemble every design from. Know what each does, where it goes, and its main tradeoff.</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 560 250" role="img" aria-label="Reference web architecture">
+          <rect x="10" y="105" width="90" height="40" rx="9" class="sv-box"/><text x="55" y="129" text-anchor="middle" class="sv-tm">Client</text>
+          <rect x="120" y="105" width="70" height="40" rx="9" class="sv-accent2"/><text x="155" y="125" text-anchor="middle" class="sv-tm">CDN</text><text x="155" y="138" text-anchor="middle" class="sv-tm">/edge</text>
+          <rect x="210" y="105" width="80" height="40" rx="9" class="sv-accent"/><text x="250" y="125" text-anchor="middle" class="sv-tm">Load</text><text x="250" y="138" text-anchor="middle" class="sv-tm">balancer</text>
+          <rect x="310" y="60" width="90" height="34" rx="8" class="sv-box"/><text x="355" y="82" text-anchor="middle" class="sv-tm">App server</text>
+          <rect x="310" y="105" width="90" height="34" rx="8" class="sv-box"/><text x="355" y="127" text-anchor="middle" class="sv-tm">App server</text>
+          <rect x="310" y="150" width="90" height="34" rx="8" class="sv-box"/><text x="355" y="172" text-anchor="middle" class="sv-tm">App server</text>
+          <rect x="430" y="55" width="110" height="34" rx="8" class="sv-warn"/><text x="485" y="77" text-anchor="middle" class="sv-tm">Cache</text>
+          <rect x="430" y="102" width="110" height="40" rx="8" class="sv-box"/><text x="485" y="120" text-anchor="middle" class="sv-tm">DB (primary</text><text x="485" y="134" text-anchor="middle" class="sv-tm">+ replicas)</text>
+          <rect x="430" y="155" width="110" height="34" rx="8" class="sv-accent2"/><text x="485" y="177" text-anchor="middle" class="sv-tm">Queue → workers</text>
+          <path class="sv-arrow" d="M100 125 L118 125"/>
+          <path class="sv-arrow" d="M190 125 L208 125"/>
+          <path class="sv-arrow" d="M290 122 L308 90"/>
+          <path class="sv-arrow" d="M290 125 L308 122"/>
+          <path class="sv-arrow" d="M290 128 L308 165"/>
+          <path class="sv-arrow" d="M400 90 L428 78"/>
+          <path class="sv-arrow" d="M400 122 L428 120"/>
+          <path class="sv-arrow" d="M400 165 L428 168"/>
+        </svg>
+        <div class="cap">The default skeleton — start here, then justify each box from your requirements.</div>
+      </div>
+
+      <div class="grid two">
+        <div class="card"><h3>Load balancer</h3><p class="t-sub">Spreads traffic across app servers; enables horizontal scaling + failover. Round-robin / least-connections. Health checks remove dead nodes.</p></div>
+        <div class="card"><h3>Cache</h3><p class="t-sub">Redis/Memcached in front of the DB for hot reads. Decide: what to cache, TTL/eviction (LRU), and <b>invalidation</b> (the hard part). Cache-aside is the common pattern.</p></div>
+        <div class="card"><h3>SQL vs NoSQL</h3><p class="t-sub">SQL: relations, transactions, strong consistency. NoSQL: flexible schema, horizontal scale, tuned to an access pattern. Pick from your data model, not hype.</p></div>
+        <div class="card"><h3>Indexing</h3><p class="t-sub">Speeds reads on queried columns, slows writes and costs space. Index what you filter/sort on.</p></div>
+        <div class="card"><h3>Sharding</h3><p class="t-sub">Partition data across nodes by a shard key (e.g. user_id) when one DB can't hold the load. Tradeoff: cross-shard queries get painful; pick the key by access pattern.</p></div>
+        <div class="card"><h3>Replication</h3><p class="t-sub">Copies for read scaling + failover. Primary-replica: writes to primary, reads from replicas → <b>replication lag</b> = eventual consistency on reads.</p></div>
+        <div class="card"><h3>Message queue</h3><p class="t-sub">Kafka/SQS/RabbitMQ decouple producers from consumers, absorb spikes, enable async work (emails, feeds). Adds eventual consistency + at-least-once delivery to reason about.</p></div>
+        <div class="card"><h3>CDN</h3><p class="t-sub">Caches static/media at edge locations near users → lower latency, less origin load.</p></div>
+      </div>
+
+      <h3>CAP, in plain words</h3>
+      <div class="figure">
+        <svg viewBox="0 0 360 200" role="img" aria-label="CAP theorem triangle">
+          <polygon points="180,20 40,170 320,170" class="sv-accent" fill-opacity="0.12"/>
+          <text x="180" y="14" text-anchor="middle" class="sv-t">Consistency</text>
+          <text x="30" y="185" text-anchor="middle" class="sv-t">Availability</text>
+          <text x="330" y="185" text-anchor="middle" class="sv-t">Partition tol.</text>
+          <text x="180" y="120" text-anchor="middle" class="sv-tm">network partitions happen →</text>
+          <text x="180" y="138" text-anchor="middle" class="sv-tm">you pick C or A</text>
+        </svg>
+      </div>
+      <p>When the network splits, you either refuse some requests to stay <b>consistent</b> (CP) or answer with possibly-stale data to stay <b>available</b> (AP). Say which one your system chooses and why — e.g. "a bank ledger is CP; a social feed is AP."</p>
+    </section>
+
+    <!-- MOCKS -->
+    <section class="page" id="mocks">
+      <h1>Mock questions</h1>
+      <p class="lede">Do these <b>out loud, on a whiteboard tool</b>, timed to ~40 min. Run the 7-step framework each time. Check them off as you complete a full pass.</p>
+
+      <label class="track" data-id="m-url"><input type="checkbox"><span><span class="t-title">URL shortener</span><br><span class="t-sub">Hash/counter → short code, read-heavy, cache + KV store, redirect path. Classic warm-up.</span></span></label>
+      <label class="track" data-id="m-rate"><input type="checkbox"><span><span class="t-title">Rate limiter / API gateway</span><br><span class="t-sub">Token bucket vs sliding window, where it lives, distributed counter in Redis. Ties into your concurrency prep.</span></span></label>
+      <label class="track" data-id="m-chat"><input type="checkbox"><span><span class="t-title">Chat / notification system</span><br><span class="t-sub">WebSockets, fan-out on write vs read, message queue, delivery + presence.</span></span></label>
+      <label class="track" data-id="m-feed"><input type="checkbox"><span><span class="t-title">News feed</span><br><span class="t-sub">Fan-out tradeoffs, caching timelines, hot users. Great tradeoff discussion.</span></span></label>
+      <label class="track" data-id="m-board"><input type="checkbox"><span><span class="t-title">Collaborative whiteboard / editor ★</span><br><span class="t-sub">The meta-hint. WebSockets for real-time sync, OT vs CRDT (conflict resolution), presence/cursors, persistence. Do this one for sure.</span></span></label>
+
+      <div class="callout"><b>★ Why the whiteboard question:</b> your design round is on shared whiteboard software. Designing a collaborative editor is a natural pick. Key beats: real-time transport (WebSockets), the <b>OT vs CRDT</b> tradeoff for merging concurrent edits, presence, and how you persist + replay document state.</div>
+    </section>
+
+    <!-- COLLAB -->
+    <section class="page" id="collab">
+      <h1>Both rounds are "collaborative"</h1>
+      <p class="lede">The word appears in both descriptions on purpose. They're testing how you work <em>with</em> someone, not just what you know.</p>
+
+      <div class="card">
+        <h3>In the coding round</h3>
+        <ul>
+          <li><b>Clarify before coding:</b> "I/O or CPU-bound? How many tasks? Any ordering guarantee?"</li>
+          <li><b>Narrate as you type:</b> "I'll use a thread pool here so I don't hand-manage threads…"</li>
+          <li>Start simple (a working serial version), then make it concurrent — a running solution beats a perfect unfinished one.</li>
+          <li>When stuck, think out loud and invite input rather than going silent.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>In the design round</h3>
+        <ul>
+          <li><b>Drive requirements first</b> — treat the interviewer as your PM, confirm scope and cut features.</li>
+          <li>State assumptions and let them steer: "I'll assume read-heavy — correct me if not."</li>
+          <li>Draw <b>boxes and arrows fast and legibly</b>; label the data flow. Practice on <a href="https://excalidraw.com" target="_blank" rel="noopener">Excalidraw</a> (free, no login).</li>
+          <li>Volunteer tradeoffs before they ask — "the cost here is replication lag" — that reads as senior thinking.</li>
+        </ul>
+      </div>
+      <div class="callout"><b>Golden rule:</b> a communicated good answer scores higher than a silent great one. Talk.</div>
+    </section>
+
+    <footer>
+      Portable prep kit · works offline once loaded · progress saved on this device.
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  // ---- theme ----
+  var root=document.documentElement, tkey="prep-theme";
+  var saved=localStorage.getItem(tkey);
+  if(saved) root.setAttribute("data-theme",saved);
+  document.getElementById("themeBtn").onclick=function(){
+    var cur=root.getAttribute("data-theme")==="light"?"dark":"light";
+    root.setAttribute("data-theme",cur); localStorage.setItem(tkey,cur);
+  };
+
+  // ---- nav ----
+  var links=[].slice.call(document.querySelectorAll('nav.side a'));
+  var pages=[].slice.call(document.querySelectorAll('section.page'));
+  var side=document.getElementById('side'), scrim=document.getElementById('scrim');
+  function closeMenu(){side.classList.remove('open');scrim.classList.remove('show');}
+  function go(id){
+    pages.forEach(function(p){p.classList.toggle('active',p.id===id);});
+    links.forEach(function(a){a.classList.toggle('active',a.getAttribute('data-go')===id);});
+    window.scrollTo(0,0); closeMenu();
+    if(history.replaceState) history.replaceState(null,"","#"+id);
+  }
+  links.forEach(function(a){a.onclick=function(){go(a.getAttribute('data-go'));};});
+  document.getElementById('mtoggle').onclick=function(){side.classList.toggle('open');scrim.classList.toggle('show');};
+  scrim.onclick=closeMenu;
+  var start=(location.hash||'').replace('#','');
+  if(start && document.getElementById(start)) go(start);
+
+  // ---- progress checkboxes ----
+  var pkey="prep-progress";
+  var state=JSON.parse(localStorage.getItem(pkey)||"{}");
+  var tracks=[].slice.call(document.querySelectorAll('.track'));
+  function refresh(){
+    var done=0;
+    tracks.forEach(function(t){
+      var id=t.getAttribute('data-id'), on=!!state[id];
+      t.querySelector('input').checked=on;
+      t.classList.toggle('done',on);
+      if(on) done++;
+    });
+    var pct=tracks.length?Math.round(done/tracks.length*100):0;
+    document.getElementById('progFill').style.width=pct+"%";
+    document.getElementById('progText').textContent=pct+"% complete · "+done+"/"+tracks.length+" milestones";
+  }
+  tracks.forEach(function(t){
+    t.addEventListener('click',function(e){
+      if(e.target.tagName!=='INPUT'){ // let the label toggle naturally otherwise
+        var box=t.querySelector('input'); box.checked=!box.checked;
+      }
+      var id=t.getAttribute('data-id');
+      state[id]=t.querySelector('input').checked;
+      localStorage.setItem(pkey,JSON.stringify(state));
+      refresh();
+    });
+  });
+  refresh();
+
+  // ---- tiny Python highlighter (single-pass, safe) ----
+  var pat=/(#[^\n]*)|("""[\s\S]*?"""|'[^'\n]*'|"[^"\n]*")|(\b(?:import|from|def|class|return|if|elif|else|while|for|in|with|as|try|except|finally|break|continue|None|True|False|and|or|not|is|lambda|async|await|yield|raise|pass|self)\b)/g;
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  document.querySelectorAll('pre code.python').forEach(function(el){
+    var out=esc(el.textContent).replace(pat,function(m,c,s,k){
+      if(c!==undefined&&c!=='') return '<span class="c">'+c+'</span>';
+      if(s!==undefined&&s!=='') return '<span class="s">'+s+'</span>';
+      if(k!==undefined&&k!=='') return '<span class="k">'+k+'</span>';
+      return m;
+    });
+    el.innerHTML=out;
+  });
+})();
+</script>
+</body>
+</html>
