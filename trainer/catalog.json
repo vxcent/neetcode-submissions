@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-15T06:30:06+00:00",
+  "generated": "2026-07-28T17:22:44+00:00",
   "repo": "vxcent/neetcode-submissions",
-  "count": 72,
+  "count": 73,
   "cards": [
     {
       "id": "building-h2o",
@@ -546,6 +546,17 @@
         "space": "O(capacity)",
         "insight": "Hashmap gives O(1) key access; doubly linked list enables O(1) move-to-front and eviction of the least recently used node."
       }
+    },
+    {
+      "id": "maximum-number-of-balls-in-a-box",
+      "title": "Maximum Number Of Balls In A Box",
+      "topic": "Data Structures & Algorithms",
+      "ext": "py",
+      "subs": 1,
+      "codePath": "Data Structures & Algorithms/maximum-number-of-balls-in-a-box/submission-0.py",
+      "code": "class Solution:\n\n    def getBoxNumber(self, num):\n        box_index = 0\n        while num > 0:\n            box_index += num % 10\n            num = num // 10\n        return box_index\n\n    def countBalls(self, lowLimit: int, highLimit: int) -> int:\n        box_map = {}\n        for i in range(lowLimit, highLimit + 1):\n            box_num = self.getBoxNumber(i)\n            if box_num in box_map:\n                box_map[box_num] += 1\n            else:\n                box_map[box_num] = 1\n        return max(box_map.values())\n",
+      "date": "2026-07-28",
+      "enriched": null
     },
     {
       "id": "minimum-stack",
