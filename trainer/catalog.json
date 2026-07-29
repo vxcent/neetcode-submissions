@@ -556,7 +556,12 @@
       "codePath": "Data Structures & Algorithms/maximum-number-of-balls-in-a-box/submission-0.py",
       "code": "class Solution:\n\n    def getBoxNumber(self, num):\n        box_index = 0\n        while num > 0:\n            box_index += num % 10\n            num = num // 10\n        return box_index\n\n    def countBalls(self, lowLimit: int, highLimit: int) -> int:\n        box_map = {}\n        for i in range(lowLimit, highLimit + 1):\n            box_num = self.getBoxNumber(i)\n            if box_num in box_map:\n                box_map[box_num] += 1\n            else:\n                box_map[box_num] = 1\n        return max(box_map.values())\n",
       "date": "2026-07-28",
-      "enriched": null
+      "enriched": {
+        "ds": "hashmap",
+        "time": "O(n log highLimit)",
+        "space": "O(log highLimit)",
+        "insight": "Group each number by the sum of its digits and return the largest group size."
+      }
     },
     {
       "id": "minimum-stack",
